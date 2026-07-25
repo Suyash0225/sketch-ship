@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Upload, Search, Siren, FileText, Bomb, Download, Radar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Upload, Search, Siren, FileText, Bomb, Download, Radar, ChevronRight } from "lucide-react";
 import { getActivity, ApiError, type ActivityLogEntry } from "../lib/api";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
@@ -121,15 +122,33 @@ export default function Activity() {
                   >
                     {Icon ? <Icon className="h-3.5 w-3.5" /> : <span className="text-xs">•</span>}
                   </span>
-                  <div className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className={`text-sm font-semibold ${color.split(" ")[0]}`}>
-                        {label}
-                      </span>
-                      <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
+                  {entry.incident_id ? (
+                    <Link
+                      to={`/incidents/${entry.incident_id}`}
+                      className="group flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 transition hover:border-violet-500/40 hover:bg-slate-900/80"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className={`text-sm font-semibold ${color.split(" ")[0]}`}>
+                            {label}
+                          </span>
+                          <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
+                        </div>
+                        <p className="mt-1 text-sm text-slate-300">{entry.details}</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-600 transition group-hover:text-violet-400" />
+                    </Link>
+                  ) : (
+                    <div className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className={`text-sm font-semibold ${color.split(" ")[0]}`}>
+                          {label}
+                        </span>
+                        <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-300">{entry.details}</p>
                     </div>
-                    <p className="mt-1 text-sm text-slate-300">{entry.details}</p>
-                  </div>
+                  )}
                 </div>
               </li>
             );

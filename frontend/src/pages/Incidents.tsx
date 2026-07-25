@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ScanSearch } from "lucide-react";
 import { getIncidents, seedLeakUrl, ApiError, type Incident } from "../lib/api";
 import PlatformBadge from "../components/PlatformBadge";
+import GoogleVisionBadge from "../components/GoogleVisionBadge";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
@@ -48,7 +49,7 @@ export default function Incidents() {
       <div>
         <h1 className="text-2xl font-bold text-white">Incidents</h1>
         <p className="mt-1 text-sm text-slate-400">
-          Leaked or re-uploaded copies of your content, detected by Gemini vision.
+          Leaked or re-uploaded copies of your content, detected by Gemini vision and real Google web searches.
         </p>
       </div>
 
@@ -99,6 +100,7 @@ export default function Incidents() {
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     <PlatformBadge platform={incident.platform} />
+                    {incident.source === "GOOGLE_VISION" && <GoogleVisionBadge size="sm" />}
                     <StatusChip status={incident.status} />
                   </div>
                   <p className="truncate text-sm text-slate-300">{incident.reasoning}</p>

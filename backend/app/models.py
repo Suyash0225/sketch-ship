@@ -35,13 +35,14 @@ class MatchResult(BaseModel):
 class Incident(BaseModel):
     id: str
     asset_id: str
-    platform: str  # "YouTube" | "X" | "Instagram"
+    platform: str  # "YouTube" | "X" | "Instagram" | real domain (Google-sourced)
     leak_image_path: str
-    leak_url: str  # fake/mock URL for the demo
+    leak_url: str  # fake/mock URL for the demo, or a real page URL for Google-sourced incidents
     similarity_score: int
     reasoning: str
     status: str  # "DETECTED" | "FILED" | "IN_REVIEW" | "RESOLVED"
     detected_at: str
+    source: str = "SYNTHETIC"  # "SYNTHETIC" (seeded /scan) | "GOOGLE_VISION" (real /web-scan)
 
 
 class Takedown(BaseModel):

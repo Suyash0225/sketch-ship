@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
-import { Ghost } from "lucide-react";
+import { Ghost, Sun, Moon } from "lucide-react";
 import { useAppStatus } from "../context/AppStatusContext";
+import { useTheme } from "../context/ThemeContext";
 
 const LINKS = [
   { to: "/", label: "Dashboard", end: true },
@@ -29,6 +30,7 @@ function MiniStat({
 
 export default function NavBar({ hasProfile }: { hasProfile: boolean | null }) {
   const { stats, backendReachable } = useAppStatus();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/85 backdrop-blur-md">
@@ -91,6 +93,16 @@ export default function NavBar({ hasProfile }: { hasProfile: boolean | null }) {
                 : "online"}
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+          >
+            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </button>
         </div>
       </div>
     </header>

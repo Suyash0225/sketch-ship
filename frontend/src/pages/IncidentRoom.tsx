@@ -18,6 +18,7 @@ import {
 import { useAppStatus } from "../context/AppStatusContext";
 import { useToast } from "../context/ToastContext";
 import PlatformBadge from "../components/PlatformBadge";
+import GoogleVisionBadge from "../components/GoogleVisionBadge";
 import StatusChip from "../components/StatusChip";
 import DmcaPreview from "../components/DmcaPreview";
 import NukeButton from "../components/NukeButton";
@@ -179,6 +180,7 @@ export default function IncidentRoom() {
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-white">Incident Room</h1>
           <PlatformBadge platform={incident.platform} />
+          {incident.source === "GOOGLE_VISION" && <GoogleVisionBadge />}
           <StatusChip status={incident.status} />
         </div>
         <a
@@ -229,8 +231,13 @@ export default function IncidentRoom() {
       <div className="flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/10 to-transparent p-6 text-center">
         <ScoreRing score={incident.similarity_score} size={140} strokeWidth={10} caption="match" />
         <p className="max-w-2xl text-sm text-slate-300">“{incident.reasoning}”</p>
-        <p className="text-xs text-slate-500">— Gemini vision analysis</p>
+        <p className="text-xs text-slate-500">
+          — {incident.source === "GOOGLE_VISION" ? "Google Vision Web Detection" : "Gemini vision analysis"}
+        </p>
       </div>
+
+      {/* Steps taken + what's next */}
+      <FilingTimeline incident={incident} takedowns={takedowns} platforms={PLATFORMS} />
 
       {/* DMCA preview tabs */}
       <div>
@@ -267,7 +274,7 @@ export default function IncidentRoom() {
         <div className="text-center">
           <h2 className="text-lg font-bold text-red-200">Ready to take this down everywhere?</h2>
           <p className="mt-1 text-sm text-slate-400">
-            One click drafts and files a DMCA takedown notice on YouTube, X, and Telegram simultaneously.
+            One click drafts and files a DMCA takedown notice on YouTube, X, and Instagram simultaneously.
           </p>
         </div>
         <div className="relative">

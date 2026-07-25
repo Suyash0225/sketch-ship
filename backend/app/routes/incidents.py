@@ -10,6 +10,7 @@ from ..models import Asset, CreatorProfile, Incident, Takedown
 from ..services.dmca import generate_dmca_notice
 from ..services.gemini_vision import compare_images
 from ..services.platform_templates import PLATFORM_TEMPLATES
+from ..services.vision_web_detection import download_image, web_detect
 from ..utils import make_activity_entry, new_id, now_iso
 
 router = APIRouter(tags=["incidents"])
@@ -85,6 +86,7 @@ def run_scan() -> dict:
                 reasoning=best_result.reasoning,
                 status="DETECTED",
                 detected_at=now_iso(),
+                source="SYNTHETIC",
             )
             db.setdefault("incidents", []).append(incident.model_dump())
             new_incidents.append(incident)
@@ -106,6 +108,79 @@ def run_scan() -> dict:
     storage.write_db(db)
 
     return {"new_incidents": [i.model_dump() for i in new_incidents]}
+
+
+@router.post("/assets/{asset_id}/web-scan")
+def run_web_scan(asset_id: str) -> dict:
+    """Real reverse-image search via Google Cloud Vision Web Detection --
+    unlike /scan (which turns pre-seeded synthetic leaks into incidents),
+    this hits the actual public web for the given asset. No-ops (returns an
+    empty list) if GOOGLE_VISION_API_KEY isn't configured or Vision finds
+    nothing -- never raises, matching the fail-soft convention elsewhere.
+    """
+    db = storage.read_db()
+    asset_dict = next((a for a in db.get("assets", []) if a["id"] == asset_id), None)
+    if asset_dict is None:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    asset_filename = os.path.basename(asset_dict["path"])
+    asset_fs_path = os.path.join(storage.UPLOADS_DIR, asset_filename)
+    if not os.path.exists(asset_fs_path):
+        raise HTTPException(status_code=404, detail="Asset file missing on disk")
+
+    already_matched_urls = {
+        inc["leak_url"] for inc in db.get("incidents", []) if inc["asset_id"] == asset_id
+    }
+
+    matches = web_detect(asset_fs_path)
+
+    new_incidents: list[Incident] = []
+    for match in matches:
+        leak_url = match.page_url or match.image_url
+        if leak_url in already_matched_urls:
+            continue  # already have an incident for this exact page/image
+
+        storage.ensure_dirs()
+        leak_id = new_id()
+        leak_filename = f"{leak_id}_web.jpg"
+        leak_fs_path = os.path.join(storage.SEED_LEAKS_DIR, leak_filename)
+        downloaded = download_image(match.image_url, leak_fs_path)
+        if not downloaded:
+            continue  # can't render a match we couldn't fetch -- skip rather than show a broken image
+
+        incident = Incident(
+            id=new_id(),
+            asset_id=asset_id,
+            platform=match.platform_label(),
+            leak_image_path=f"/seed_leaks/{leak_filename}",
+            leak_url=leak_url,
+            similarity_score=int(match.score),
+            reasoning=f"Real match found via Google Cloud Vision Web Detection ({match.match_type} match).",
+            status="DETECTED",
+            detected_at=now_iso(),
+            source="GOOGLE_VISION",
+        )
+        db.setdefault("incidents", []).append(incident.model_dump())
+        new_incidents.append(incident)
+        already_matched_urls.add(leak_url)
+        db.setdefault("activity", []).append(
+            make_activity_entry(
+                "INCIDENT_DETECTED",
+                f"[REAL] Detected leak on {incident.platform} via Google Vision "
+                f"(score {incident.similarity_score}) for asset {asset_id}",
+                incident_id=incident.id,
+            )
+        )
+
+    db.setdefault("activity", []).append(
+        make_activity_entry(
+            "SCAN_RUN",
+            f"Real web scan completed for asset {asset_id}: {len(new_incidents)} new incident(s)",
+        )
+    )
+    storage.write_db(db)
+
+    return {"new_incidents": [i.model_dump() for i in new_incidents], "raw_match_count": len(matches)}
 
 
 @router.get("/incidents")

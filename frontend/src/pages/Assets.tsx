@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
-import { UploadCloud, Image as ImageIcon } from "lucide-react";
-import { getAssets, postAsset, uploadUrl, ApiError, type Asset } from "../lib/api";
+import { UploadCloud, Image as ImageIcon, Search } from "lucide-react";
+import { getAssets, postAsset, postWebScan, uploadUrl, ApiError, type Asset } from "../lib/api";
 import { useAppStatus } from "../context/AppStatusContext";
 import { useToast } from "../context/ToastContext";
 import Spinner from "../components/Spinner";
@@ -35,6 +35,7 @@ export default function Assets() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [webScanningId, setWebScanningId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { refreshStats } = useAppStatus();
   const { showToast } = useToast();
@@ -89,6 +90,31 @@ export default function Assets() {
     e.preventDefault();
     setDragActive(false);
     handleFiles(e.dataTransfer.files);
+  };
+
+  const runWebScan = async (asset: Asset) => {
+    setWebScanningId(asset.id);
+    try {
+      const result = await postWebScan(asset.id);
+      if (result.new_incidents.length > 0) {
+        showToast(
+          `Real web search found ${result.new_incidents.length} match(es) for "${asset.filename}".`,
+          "success"
+        );
+      } else if (result.raw_match_count > 0) {
+        showToast(`Google found ${result.raw_match_count} candidate(s) but none were downloadable.`, "error");
+      } else {
+        showToast(`No real web matches found for "${asset.filename}" yet.`, "success");
+      }
+      refreshStats();
+    } catch (err) {
+      showToast(
+        err instanceof ApiError ? err.message : `Web scan failed for "${asset.filename}".`,
+        "error"
+      );
+    } finally {
+      setWebScanningId(null);
+    }
   };
 
   return (
@@ -201,6 +227,24 @@ export default function Assets() {
                     ))}
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => runWebScan(asset)}
+                  disabled={webScanningId === asset.id}
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-2 py-1.5 text-xs font-medium text-violet-200 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {webScanningId === asset.id ? (
+                    <>
+                      <Spinner size={12} className="text-violet-300" />
+                      Searching Google…
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-3 w-3" />
+                      Real web scan
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           ))}

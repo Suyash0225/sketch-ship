@@ -141,15 +141,29 @@ export default function Dashboard() {
           <ul className="divide-y divide-white/5 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
             {activity.map((entry) => {
               const Icon = ACTION_ICON[entry.action];
+              const iconEl = Icon ? (
+                <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+              ) : (
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-500" />
+              );
               return (
-                <li key={entry.id} className="flex items-center gap-3 px-4 py-3">
-                  {Icon ? (
-                    <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+                <li key={entry.id}>
+                  {entry.incident_id ? (
+                    <Link
+                      to={`/incidents/${entry.incident_id}`}
+                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-white/5"
+                    >
+                      {iconEl}
+                      <span className="flex-1 truncate text-sm text-slate-200">{entry.details}</span>
+                      <span className="shrink-0 text-xs text-slate-500">{timeAgo(entry.timestamp)}</span>
+                    </Link>
                   ) : (
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-500" />
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {iconEl}
+                      <span className="flex-1 truncate text-sm text-slate-200">{entry.details}</span>
+                      <span className="shrink-0 text-xs text-slate-500">{timeAgo(entry.timestamp)}</span>
+                    </div>
                   )}
-                  <span className="flex-1 truncate text-sm text-slate-200">{entry.details}</span>
-                  <span className="shrink-0 text-xs text-slate-500">{timeAgo(entry.timestamp)}</span>
                 </li>
               );
             })}
