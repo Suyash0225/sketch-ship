@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Search, CheckCircle2 } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   getIncident,
   getAssets,
@@ -27,14 +27,42 @@ import Spinner from "../components/Spinner";
 import ErrorBanner from "../components/ErrorBanner";
 import ScoreRing from "../components/ScoreRing";
 import FilingTimeline from "../components/FilingTimeline";
+import { caseNo } from "../lib/format";
 
-const PLATFORMS: Platform[] = ["YouTube", "X", "Instagram"];
+const BASE_PLATFORMS: Platform[] = ["YouTube", "X", "Instagram"];
 
 type PreviewState = {
   status: "idle" | "loading" | "preview" | "error";
   text?: string;
   error?: string;
 };
+
+function ExhibitFrame({
+  label,
+  tone,
+  children,
+}: {
+  label: string;
+  tone: "ink" | "crimson";
+  children: React.ReactNode;
+}) {
+  return (
+    <figure
+      className={`border bg-card p-2 shadow-[3px_4px_0_0_rgba(33,29,20,0.1)] ${
+        tone === "crimson" ? "border-crimson/50" : "border-line"
+      }`}
+    >
+      <div className="aspect-video border border-line bg-well">{children}</div>
+      <figcaption
+        className={`mt-2 px-1 pb-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+          tone === "crimson" ? "text-crimson" : "text-ink-soft"
+        }`}
+      >
+        {label}
+      </figcaption>
+    </figure>
+  );
+}
 
 export default function IncidentRoom() {
   const { id } = useParams<{ id: string }>();
@@ -47,16 +75,23 @@ export default function IncidentRoom() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<Platform>(PLATFORMS[0]);
-  const [previews, setPreviews] = useState<Record<Platform, PreviewState>>({
+  const [activeTab, setActiveTab] = useState<string>(BASE_PLATFORMS[0]);
+  const [previews, setPreviews] = useState<Record<string, PreviewState>>({
     YouTube: { status: "idle" },
     X: { status: "idle" },
     Instagram: { status: "idle" },
   });
 
-  const [takedowns, setTakedowns] = useState<Partial<Record<Platform, Takedown>>>({});
+  const [takedowns, setTakedowns] = useState<Partial<Record<string, Takedown>>>({});
   const [nuking, setNuking] = useState(false);
   const [justNuked, setJustNuked] = useState(false);
+
+  // The leak may have been found on a real platform (via SerpApi) outside
+  // the three we have dedicated DMCA templates for -- surface that platform
+  // as its own tab too so a notice can be drafted/filed for it.
+  const platforms = incident
+    ? Array.from(new Set<string>([incident.platform, ...BASE_PLATFORMS]))
+    : BASE_PLATFORMS;
 
   const load = useCallback(() => {
     if (!id) return;
@@ -67,10 +102,12 @@ export default function IncidentRoom() {
       .then(([inc, assets, existingTakedowns]) => {
         setIncident(inc);
         setOriginalAsset(assets.find((a) => a.id === inc.asset_id) ?? null);
+        setActiveTab(inc.platform);
+        setPreviews((p) => (p[inc.platform] ? p : { ...p, [inc.platform]: { status: "idle" } }));
         if (existingTakedowns.length > 0) {
-          const byPlatform: Partial<Record<Platform, Takedown>> = {};
+          const byPlatform: Partial<Record<string, Takedown>> = {};
           existingTakedowns.forEach((t) => {
-            byPlatform[t.platform as Platform] = t;
+            byPlatform[t.platform] = t;
           });
           setTakedowns(byPlatform);
         }
@@ -90,7 +127,7 @@ export default function IncidentRoom() {
   }, [load]);
 
   const generatePreview = useCallback(
-    async (platform: Platform) => {
+    async (platform: string) => {
       if (!id) return;
       setPreviews((p) => ({ ...p, [platform]: { status: "loading" } }));
       try {
@@ -109,9 +146,9 @@ export default function IncidentRoom() {
     [id]
   );
 
-  const selectTab = (platform: Platform) => {
+  const selectTab = (platform: string) => {
     setActiveTab(platform);
-    if (previews[platform].status === "idle" && !takedowns[platform]) {
+    if ((previews[platform]?.status ?? "idle") === "idle" && !takedowns[platform]) {
       generatePreview(platform);
     }
   };
@@ -121,9 +158,9 @@ export default function IncidentRoom() {
     setNuking(true);
     try {
       const res = await postNuke(id);
-      const byPlatform: Partial<Record<Platform, Takedown>> = {};
+      const byPlatform: Partial<Record<string, Takedown>> = {};
       res.takedowns.forEach((t) => {
-        byPlatform[t.platform as Platform] = t;
+        byPlatform[t.platform] = t;
       });
       setTakedowns(byPlatform);
       setJustNuked(true);
@@ -132,7 +169,7 @@ export default function IncidentRoom() {
       refreshStats();
     } catch (err) {
       showToast(
-        err instanceof ApiError ? err.message : "Nuke failed — try again.",
+        err instanceof ApiError ? err.message : "Filing failed — try again.",
         "error"
       );
     } finally {
@@ -142,9 +179,9 @@ export default function IncidentRoom() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-2 py-24 text-slate-400">
-        <Spinner size={22} />
-        Loading incident…
+      <div className="flex items-center justify-center gap-2 py-24 text-xs uppercase tracking-[0.16em] text-ink-faint">
+        <Spinner size={20} />
+        Pulling the case file…
       </div>
     );
   }
@@ -152,13 +189,16 @@ export default function IncidentRoom() {
   if (notFound) {
     return (
       <div className="mx-auto max-w-md py-24 text-center">
-        <Search className="mx-auto mb-2 h-10 w-10 text-slate-600" />
-        <p className="mb-1 font-semibold text-slate-200">Incident not found</p>
-        <p className="mb-5 text-sm text-slate-400">
+        <Search className="mx-auto mb-2 h-10 w-10 text-ink-faint" />
+        <p className="mb-1 font-display text-xl text-ink">Case not found</p>
+        <p className="mb-5 text-xs text-ink-soft">
           It may have been resolved or the link is stale.
         </p>
-        <Link to="/incidents" className="text-sm font-medium text-violet-400 hover:text-violet-300">
-          ← Back to incidents
+        <Link
+          to="/incidents"
+          className="text-[11px] font-semibold uppercase tracking-[0.14em] text-crimson hover:text-crimson-deep"
+        >
+          ← Back to cases
         </Link>
       </div>
     );
@@ -168,17 +208,22 @@ export default function IncidentRoom() {
     return <ErrorBanner message={error ?? "Something went wrong."} onRetry={load} />;
   }
 
-  const activePreview = previews[activeTab];
+  const activePreview = previews[activeTab] ?? { status: "idle" as const };
   const activeTakedown = takedowns[activeTab];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <Link to="/incidents" className="text-sm font-medium text-slate-400 hover:text-slate-200">
-          ← Back to incidents
+        <Link
+          to="/incidents"
+          className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint hover:text-ink"
+        >
+          ← All cases
         </Link>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold text-white">Incident Room</h1>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-4xl tracking-tight text-ink">
+            Case {caseNo(incident.id)}
+          </h1>
           <PlatformBadge platform={incident.platform} />
           {incident.source === "GOOGLE_VISION" && <GoogleVisionBadge />}
           <StatusChip status={incident.status} />
@@ -187,74 +232,74 @@ export default function IncidentRoom() {
           href={incident.leak_url}
           target="_blank"
           rel="noreferrer"
-          className="mt-1 inline-block truncate text-xs text-slate-500 hover:text-violet-400 hover:underline"
+          className="mt-2 inline-block truncate text-[11px] text-ink-faint hover:text-crimson hover:underline"
         >
           {incident.leak_url}
         </a>
       </div>
 
-      {/* Side-by-side comparison */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
-          <p className="border-b border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Original
-          </p>
-          <div className="aspect-video bg-slate-950">
-            {originalAsset ? (
-              <img
-                src={uploadUrl(originalAsset.path || originalAsset.filename)}
-                alt="Original asset"
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-slate-600">
-                Original asset unavailable
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="overflow-hidden rounded-xl border border-red-500/20 bg-slate-900/50">
-          <p className="border-b border-red-500/20 bg-red-500/5 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-red-300">
-            Leaked copy — {incident.platform}
-          </p>
-          <div className="aspect-video bg-slate-950">
+      {/* Exhibit A vs Exhibit B */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <ExhibitFrame label="Exhibit A — Original work" tone="ink">
+          {originalAsset ? (
             <img
-              src={seedLeakUrl(incident.leak_image_path)}
-              alt="Leaked copy"
+              src={uploadUrl(originalAsset.path || originalAsset.filename)}
+              alt="Original asset"
               className="h-full w-full object-contain"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
             />
-          </div>
-        </div>
+          ) : (
+            <div className="flex h-full items-center justify-center text-xs text-ink-faint">
+              Original asset unavailable
+            </div>
+          )}
+        </ExhibitFrame>
+        <ExhibitFrame label={`Exhibit B — Infringing copy · ${incident.platform}`} tone="crimson">
+          <img
+            src={seedLeakUrl(incident.leak_image_path)}
+            alt="Leaked copy"
+            className="h-full w-full object-contain"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </ExhibitFrame>
       </div>
 
-      {/* Score + reasoning */}
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-violet-500/10 to-transparent p-6 text-center">
+      {/* Finding: score + expert reasoning */}
+      <div className="flex flex-col items-center gap-4 border-y-2 border-ink py-8 text-center">
         <ScoreRing score={incident.similarity_score} size={140} strokeWidth={10} caption="match" />
-        <p className="max-w-2xl text-sm text-slate-300">“{incident.reasoning}”</p>
-        <p className="text-xs text-slate-500">
+        <p className="max-w-2xl font-display text-lg italic leading-relaxed text-ink">
+          “{incident.reasoning}”
+        </p>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">
           — {incident.source === "GOOGLE_VISION" ? "Google Vision Web Detection" : "Gemini vision analysis"}
         </p>
       </div>
 
       {/* Steps taken + what's next */}
-      <FilingTimeline incident={incident} takedowns={takedowns} platforms={PLATFORMS} />
+      <FilingTimeline incident={incident} takedowns={takedowns} platforms={platforms} />
 
-      {/* DMCA preview tabs */}
+      {/* DMCA notice tabs */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-white">DMCA Notice Preview</h2>
-        <div className="mb-3 flex gap-1 rounded-full border border-white/10 bg-white/5 p-1 w-fit">
-          {PLATFORMS.map((p) => (
+        <h2 className="mb-3 border-b border-ink pb-2 font-display text-2xl text-ink">
+          The Notice
+        </h2>
+        <div className="mb-4 flex flex-wrap gap-5 text-[11px] font-semibold uppercase tracking-[0.16em]">
+          {platforms.map((p) => (
             <button
               key={p}
               onClick={() => selectTab(p)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              className={`cursor-pointer border-b-2 pb-1 transition ${
                 activeTab === p
-                  ? "bg-violet-500/90 text-white shadow"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white"
+                  ? "border-crimson text-ink"
+                  : "border-transparent text-ink-faint hover:border-line hover:text-ink"
               }`}
             >
               {p}
-              {takedowns[p] && <CheckCircle2 className="ml-1.5 inline h-3.5 w-3.5 text-emerald-300" />}
+              {takedowns[p] && <span className="ml-1.5 text-verdant">✓</span>}
             </button>
           ))}
         </div>
@@ -269,24 +314,27 @@ export default function IncidentRoom() {
         />
       </div>
 
-      {/* Nuke */}
-      <div className="space-y-4 rounded-2xl border border-red-500/20 bg-red-950/10 p-6">
+      {/* File everywhere */}
+      <div className="space-y-5 border-3 border-double border-crimson/60 bg-crimson-wash/40 p-6">
         <div className="text-center">
-          <h2 className="text-lg font-bold text-red-200">Ready to take this down everywhere?</h2>
-          <p className="mt-1 text-sm text-slate-400">
-            One click drafts and files a DMCA takedown notice on YouTube, X, and Instagram simultaneously.
+          <h2 className="font-display text-2xl text-crimson-deep">
+            Ready to take this down everywhere?
+          </h2>
+          <p className="mx-auto mt-1 max-w-xl text-xs leading-relaxed text-ink-soft">
+            One strike drafts and files a DMCA takedown notice on {platforms.join(", ")}{" "}
+            simultaneously — every filing entered into the record below.
           </p>
         </div>
         <div className="relative">
           {justNuked && (
             <>
-              <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-emerald-400/70 animate-success-ring" />
+              <span className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring" />
               <span
-                className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-emerald-400/70 animate-success-ring"
+                className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring"
                 style={{ animationDelay: "150ms" }}
               />
               <span
-                className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-emerald-400/70 animate-success-ring"
+                className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring"
                 style={{ animationDelay: "300ms" }}
               />
             </>
@@ -297,8 +345,8 @@ export default function IncidentRoom() {
             alreadyFiled={incident.status === "FILED"}
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          {PLATFORMS.map((p, idx) => (
+        <div className={`grid gap-3 ${platforms.length >= 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}>
+          {platforms.map((p, idx) => (
             <PlatformFlipCard
               key={p}
               platform={p}

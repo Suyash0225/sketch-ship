@@ -1,18 +1,43 @@
-import { Radar, CheckCircle2, ArrowRight } from "lucide-react";
-import type { Incident, Platform, Takedown } from "../lib/api";
+import type { Incident, Takedown } from "../lib/api";
+import { formatDate } from "../lib/format";
 
 interface Props {
   incident: Incident;
-  takedowns: Partial<Record<Platform, Takedown>>;
-  platforms: Platform[];
+  takedowns: Partial<Record<string, Takedown>>;
+  platforms: string[];
 }
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-  } catch {
-    return iso;
-  }
+function Entry({
+  no,
+  tone,
+  title,
+  when,
+  children,
+}: {
+  no: string;
+  tone: "crimson" | "verdant" | "ink" | "faint";
+  title: string;
+  when?: string;
+  children?: React.ReactNode;
+}) {
+  const toneClass = {
+    crimson: "text-crimson",
+    verdant: "text-verdant",
+    ink: "text-ink",
+    faint: "text-ink-faint",
+  }[tone];
+  return (
+    <li className="flex gap-4 border-b border-dashed border-line py-3 last:border-b-0">
+      <span className={`font-display text-lg font-semibold tabular-nums ${toneClass}`}>{no}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className={`text-xs font-bold uppercase tracking-[0.14em] ${toneClass}`}>{title}</p>
+          {when && <p className="text-[11px] tabular-nums text-ink-faint">{when}</p>}
+        </div>
+        {children && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{children}</p>}
+      </div>
+    </li>
+  );
 }
 
 export default function FilingTimeline({ incident, takedowns, platforms }: Props) {
@@ -22,49 +47,32 @@ export default function FilingTimeline({ incident, takedowns, platforms }: Props
     .sort((a, b) => new Date(a.filed_at).getTime() - new Date(b.filed_at).getTime());
 
   const allFiled = platforms.length > 0 && platforms.every((p) => !!takedowns[p]);
+  let n = 0;
+  const num = () => String(++n).padStart(2, "0");
 
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-900/50 p-5">
-      <h2 className="mb-4 text-lg font-semibold text-white">What happened</h2>
-      <ol className="relative space-y-5 border-l border-white/10 pl-6">
-        <li className="relative">
-          <span className="absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border border-amber-500/40 bg-slate-950 text-amber-300">
-            <Radar className="h-3.5 w-3.5" />
-          </span>
-          <p className="text-sm font-semibold text-amber-300">Leak detected</p>
-          <p className="mt-0.5 text-sm text-slate-300">
-            {incident.similarity_score}% match on {incident.platform} — "{incident.reasoning}"
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">{formatDate(incident.detected_at)}</p>
-        </li>
+    <div className="border border-line bg-card p-5">
+      <h2 className="mb-1 font-display text-xl text-ink">Docket entries</h2>
+      <ol>
+        <Entry no={num()} tone="crimson" title="Leak detected" when={formatDate(incident.detected_at)}>
+          {incident.similarity_score}% match on {incident.platform} — “{incident.reasoning}”
+        </Entry>
 
         {filedList.map((t) => (
-          <li key={t.id} className="relative">
-            <span className="absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border border-emerald-500/40 bg-slate-950 text-emerald-300">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            </span>
-            <p className="text-sm font-semibold text-emerald-300">DMCA notice filed — {t.platform}</p>
-            <p className="mt-0.5 text-xs text-slate-500">{formatDate(t.filed_at)}</p>
-          </li>
+          <Entry
+            key={t.id}
+            no={num()}
+            tone="verdant"
+            title={`DMCA notice filed — ${t.platform}`}
+            when={formatDate(t.filed_at)}
+          />
         ))}
 
-        <li className="relative">
-          <span
-            className={`absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border bg-slate-950 ${
-              allFiled ? "border-violet-500/40 text-violet-300" : "border-white/15 text-slate-500"
-            }`}
-          >
-            <ArrowRight className="h-3.5 w-3.5" />
-          </span>
-          <p className={`text-sm font-semibold ${allFiled ? "text-violet-300" : "text-slate-400"}`}>
-            {allFiled ? "What's next" : "Next step"}
-          </p>
-          <p className="mt-0.5 text-sm text-slate-300">
-            {allFiled
-              ? "Notices are filed on every platform. Platforms typically acknowledge DMCA takedowns within 24–72 hours — status here will move from FILED to IN_REVIEW, then RESOLVED (or FAILED if a platform rejects the notice) as they respond."
-              : "Not filed yet. Review the DMCA preview below, then hit Nuke to draft and file takedown notices on all platforms at once."}
-          </p>
-        </li>
+        <Entry no={num()} tone={allFiled ? "ink" : "faint"} title={allFiled ? "What's next" : "Next step"}>
+          {allFiled
+            ? "Notices are filed on every platform. Platforms typically acknowledge DMCA takedowns within 24–72 hours — status here will move from FILED to IN_REVIEW, then RESOLVED (or FAILED if a platform rejects the notice) as they respond."
+            : "Not filed yet. Review the DMCA notice below, then file it on all platforms at once."}
+        </Entry>
       </ol>
     </div>
   );

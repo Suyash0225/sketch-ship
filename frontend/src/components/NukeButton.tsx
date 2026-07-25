@@ -1,4 +1,4 @@
-import { Bomb, CheckCircle2 } from "lucide-react";
+import { Stamp, CheckCircle2 } from "lucide-react";
 import Spinner from "./Spinner";
 
 interface Props {
@@ -9,30 +9,28 @@ interface Props {
 }
 
 export default function NukeButton({ onClick, disabled, nuking, alreadyFiled }: Props) {
-  const idle = !disabled && !nuking && !alreadyFiled;
   return (
     <button
       onClick={onClick}
       disabled={disabled || nuking || alreadyFiled}
-      className={`group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 px-6 py-5 text-lg font-extrabold uppercase tracking-widest text-white shadow-2xl transition-all duration-150 disabled:cursor-not-allowed ${
+      className={`group relative flex w-full cursor-pointer items-center justify-center gap-3 border-3 border-double px-6 py-5 font-mono text-base font-bold uppercase tracking-[0.2em] transition-all duration-150 disabled:cursor-not-allowed ${
         alreadyFiled
-          ? "border-emerald-500/40 bg-emerald-600/30 text-emerald-200"
-          : "border-red-500 bg-gradient-to-b from-red-600 to-red-800 shadow-red-900/50 hover:scale-[1.015] hover:from-red-500 hover:to-red-700 active:scale-95"
-      } ${nuking ? "animate-nuke-shake" : ""} ${idle ? "animate-danger-glow" : ""}`}
+          ? "border-verdant bg-verdant-wash text-verdant"
+          : "border-crimson-deep bg-crimson text-card shadow-[4px_4px_0_0_#211d14] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#211d14] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_0_#211d14]"
+      } ${nuking ? "animate-nuke-shake" : ""}`}
     >
-      <span className="absolute inset-0 -translate-x-full bg-white/10 transition-transform duration-500 group-hover:translate-x-full" />
       {alreadyFiled ? (
         <>
           <CheckCircle2 className="h-5 w-5" /> Takedown Filed
         </>
       ) : nuking ? (
         <>
-          <Spinner size={22} />
+          <Spinner size={20} />
           Filing on all platforms…
         </>
       ) : (
         <>
-          <Bomb className="h-5 w-5" /> NUKE — File DMCA Everywhere
+          <Stamp className="h-5 w-5" /> File DMCA — Everywhere
         </>
       )}
     </button>

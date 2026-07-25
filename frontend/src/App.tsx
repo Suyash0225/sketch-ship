@@ -51,9 +51,9 @@ function AppShell() {
   const hasProfile = profileState.status === "ready" ? !!profileState.profile : null;
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen">
       <NavBar hasProfile={hasProfile} />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {profileState.status === "error" && (
           <div className="mb-6">
             <ErrorBanner
@@ -64,9 +64,9 @@ function AppShell() {
         )}
 
         {profileState.status === "loading" ? (
-          <div className="flex items-center justify-center gap-2 py-24 text-slate-400">
-            <Spinner size={22} />
-            Connecting to GhostTrace…
+          <div className="flex items-center justify-center gap-2 py-24 text-xs uppercase tracking-[0.16em] text-ink-faint">
+            <Spinner size={20} />
+            Opening the docket…
           </div>
         ) : (
           <Routes>

@@ -10,7 +10,7 @@ from ..models import Asset, CreatorProfile, Incident, Takedown
 from ..services.dmca import generate_dmca_notice
 from ..services.gemini_vision import compare_images
 from ..services.platform_templates import PLATFORM_TEMPLATES
-from ..services.vision_web_detection import download_image, web_detect
+from ..services.serpapi_web_detection import download_image, web_detect
 from ..utils import make_activity_entry, new_id, now_iso
 
 router = APIRouter(tags=["incidents"])
@@ -112,11 +112,12 @@ def run_scan() -> dict:
 
 @router.post("/assets/{asset_id}/web-scan")
 def run_web_scan(asset_id: str) -> dict:
-    """Real reverse-image search via Google Cloud Vision Web Detection --
+    """Real reverse-image search via SerpApi's Google Lens engine --
     unlike /scan (which turns pre-seeded synthetic leaks into incidents),
     this hits the actual public web for the given asset. No-ops (returns an
-    empty list) if GOOGLE_VISION_API_KEY isn't configured or Vision finds
-    nothing -- never raises, matching the fail-soft convention elsewhere.
+    empty list) if SERPAPI_KEY isn't configured, PUBLIC_BASE_URL isn't
+    reachable, or no matches are found -- never raises, matching the
+    fail-soft convention elsewhere.
     """
     db = storage.read_db()
     asset_dict = next((a for a in db.get("assets", []) if a["id"] == asset_id), None)
@@ -155,10 +156,10 @@ def run_web_scan(asset_id: str) -> dict:
             leak_image_path=f"/seed_leaks/{leak_filename}",
             leak_url=leak_url,
             similarity_score=int(match.score),
-            reasoning=f"Real match found via Google Cloud Vision Web Detection ({match.match_type} match).",
+            reasoning=f"Real match found via SerpApi Google Lens reverse image search ({match.match_type} match).",
             status="DETECTED",
             detected_at=now_iso(),
-            source="GOOGLE_VISION",
+            source="SERPAPI",
         )
         db.setdefault("incidents", []).append(incident.model_dump())
         new_incidents.append(incident)
@@ -166,7 +167,7 @@ def run_web_scan(asset_id: str) -> dict:
         db.setdefault("activity", []).append(
             make_activity_entry(
                 "INCIDENT_DETECTED",
-                f"[REAL] Detected leak on {incident.platform} via Google Vision "
+                f"[REAL] Detected leak on {incident.platform} via SerpApi "
                 f"(score {incident.similarity_score}) for asset {asset_id}",
                 incident_id=incident.id,
             )
@@ -221,9 +222,6 @@ def preview_dmca(incident_id: str, body: DmcaPreviewRequest) -> dict:
     if incident_dict is None:
         raise HTTPException(status_code=404, detail="Incident not found")
 
-    if body.platform not in PLATFORM_TEMPLATES:
-        raise HTTPException(status_code=400, detail=f"Unknown platform '{body.platform}'")
-
     incident = Incident(**incident_dict)
     asset = _find_asset(db, incident.asset_id)
     profile = _get_profile(db)
@@ -247,8 +245,14 @@ def nuke_incident(incident_id: str) -> dict:
     asset = _find_asset(db, incident.asset_id)
     profile = _get_profile(db)
 
+    # File on every platform we have a dedicated template for, plus whatever
+    # platform the leak was actually found on (real SerpApi matches can land
+    # on domains outside the fixed template set) -- dedup, incident's own
+    # platform first since that's where the leak actually lives.
+    platforms = list(dict.fromkeys([incident.platform, *PLATFORM_TEMPLATES.keys()]))
+
     takedowns: list[Takedown] = []
-    for platform in PLATFORM_TEMPLATES.keys():
+    for platform in platforms:
         notice_text = generate_dmca_notice(profile, platform, asset, incident)
         takedown = Takedown(
             id=new_id(),

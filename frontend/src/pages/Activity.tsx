@@ -6,11 +6,11 @@ import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 
 const ACTION_META: Record<string, { icon: typeof Upload; label: string; color: string }> = {
-  ASSET_UPLOADED: { icon: Upload, label: "Asset uploaded", color: "text-violet-300 border-violet-500/30" },
-  SCAN_RUN: { icon: Search, label: "Scan run", color: "text-blue-300 border-blue-500/30" },
-  INCIDENT_DETECTED: { icon: Siren, label: "Incident detected", color: "text-amber-300 border-amber-500/30" },
-  DMCA_FILED: { icon: FileText, label: "DMCA filed", color: "text-emerald-300 border-emerald-500/30" },
-  NUKE_TRIGGERED: { icon: Bomb, label: "Nuke triggered", color: "text-red-300 border-red-500/30" },
+  ASSET_UPLOADED: { icon: Upload, label: "Exhibit entered", color: "text-ink" },
+  SCAN_RUN: { icon: Search, label: "Sweep run", color: "text-azure" },
+  INCIDENT_DETECTED: { icon: Siren, label: "Case opened", color: "text-crimson" },
+  DMCA_FILED: { icon: FileText, label: "DMCA filed", color: "text-verdant" },
+  NUKE_TRIGGERED: { icon: Bomb, label: "Filed everywhere", color: "text-crimson-deep" },
 };
 
 function formatDate(iso: string): string {
@@ -78,15 +78,17 @@ export default function Activity() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Activity Log</h1>
-          <p className="mt-1 text-sm text-slate-400">Full audit trail — newest first.</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-faint">
+            Certified audit trail · newest first
+          </p>
+          <h1 className="mt-1 font-display text-4xl tracking-tight text-ink">The Record</h1>
         </div>
         <button
           onClick={exportJson}
           disabled={entries.length === 0}
-          className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+          className="flex cursor-pointer items-center gap-1.5 border border-ink px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Download className="h-4 w-4" /> Export JSON
+          <Download className="h-3.5 w-3.5" /> Export JSON
         </button>
       </div>
 
@@ -95,61 +97,64 @@ export default function Activity() {
       ) : loading ? (
         <div className="space-y-3">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-16 rounded-lg" />
+            <div key={i} className="skeleton h-16" />
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <EmptyState icon={<Radar />} title="No activity yet" subtitle="Actions you take will show up here in real time." />
+        <EmptyState icon={<Radar />} title="Nothing on record" subtitle="Actions you take will be entered here in real time." />
       ) : (
-        <ol className="relative max-h-[70vh] space-y-0 overflow-y-auto border-l border-white/10 pl-6">
+        <ol className="max-h-[70vh] overflow-y-auto border border-line bg-card">
           {entries.map((entry, i) => {
             const meta = ACTION_META[entry.action];
             const Icon = meta?.icon;
-            const color = meta?.color ?? "text-slate-300 border-white/20";
+            const color = meta?.color ?? "text-ink-soft";
             const label = meta?.label ?? entry.action;
             const day = dayLabel(entry.timestamp);
             const showDayHeader = i === 0 || dayLabel(entries[i - 1].timestamp) !== day;
+            const lineNo = String(entries.length - i).padStart(3, "0");
+            const body = (
+              <>
+                <span className="w-10 shrink-0 pt-0.5 text-[11px] tabular-nums text-ink-faint">
+                  {lineNo}
+                </span>
+                <span className={`shrink-0 pt-0.5 ${color}`}>
+                  {Icon ? <Icon className="h-3.5 w-3.5" /> : "•"}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <span className={`text-[11px] font-bold uppercase tracking-[0.14em] ${color}`}>
+                      {label}
+                    </span>
+                    <span className="text-[11px] tabular-nums text-ink-faint">
+                      {formatDate(entry.timestamp)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{entry.details}</p>
+                </div>
+              </>
+            );
             return (
               <li key={entry.id}>
                 {showDayHeader && (
-                  <div className="sticky top-0 z-10 -ml-6 mb-3 bg-slate-950/90 py-1 pl-6 backdrop-blur">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{day}</span>
+                  <div className="sticky top-0 z-10 border-b border-ink bg-paper px-4 py-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-soft">
+                      {day}
+                    </span>
                   </div>
                 )}
-                <div className="relative pb-6 last:pb-0">
-                  <span
-                    className={`absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full border bg-slate-950 ${color}`}
+                {entry.incident_id ? (
+                  <Link
+                    to={`/incidents/${entry.incident_id}`}
+                    className="group flex items-start gap-3 border-b border-dashed border-line px-4 py-3 transition hover:bg-well/50"
                   >
-                    {Icon ? <Icon className="h-3.5 w-3.5" /> : <span className="text-xs">•</span>}
-                  </span>
-                  {entry.incident_id ? (
-                    <Link
-                      to={`/incidents/${entry.incident_id}`}
-                      className="group flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 transition hover:border-violet-500/40 hover:bg-slate-900/80"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className={`text-sm font-semibold ${color.split(" ")[0]}`}>
-                            {label}
-                          </span>
-                          <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
-                        </div>
-                        <p className="mt-1 text-sm text-slate-300">{entry.details}</p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-600 transition group-hover:text-violet-400" />
-                    </Link>
-                  ) : (
-                    <div className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className={`text-sm font-semibold ${color.split(" ")[0]}`}>
-                          {label}
-                        </span>
-                        <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-slate-300">{entry.details}</p>
-                    </div>
-                  )}
-                </div>
+                    {body}
+                    <ChevronRight className="h-4 w-4 shrink-0 self-center text-ink-faint transition group-hover:text-crimson" />
+                  </Link>
+                ) : (
+                  <div className="flex items-start gap-3 border-b border-dashed border-line px-4 py-3">
+                    {body}
+                  </div>
+                )}
               </li>
             );
           })}

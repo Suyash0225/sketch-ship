@@ -32,14 +32,14 @@ function Icon({ kind }: { kind: ToastKind }) {
   }
 }
 
-function ringClasses(kind: ToastKind) {
+function accentClasses(kind: ToastKind) {
   switch (kind) {
     case "success":
-      return "border-emerald-500/40 bg-emerald-500/10 text-emerald-300";
+      return "border-l-verdant text-verdant";
     case "error":
-      return "border-red-500/40 bg-red-500/10 text-red-300";
+      return "border-l-crimson text-crimson";
     default:
-      return "border-violet-500/40 bg-violet-500/10 text-violet-300";
+      return "border-l-ink text-ink-soft";
   }
 }
 
@@ -67,17 +67,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`animate-toast-in pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-md ${ringClasses(
+            className={`animate-toast-in pointer-events-auto flex items-start gap-3 border border-l-4 border-line bg-card px-4 py-3 shadow-[3px_3px_0_0_rgba(33,29,20,0.15)] ${accentClasses(
               t.kind
             )}`}
           >
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/20">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
               <Icon kind={t.kind} />
             </span>
-            <p className="text-sm leading-snug text-slate-100">{t.message}</p>
+            <p className="text-xs leading-relaxed text-ink">{t.message}</p>
             <button
               onClick={() => dismiss(t.id)}
-              className="ml-auto text-slate-400 hover:text-slate-200"
+              className="ml-auto cursor-pointer text-ink-faint hover:text-ink"
               aria-label="Dismiss"
             >
               <X className="h-4 w-4" />

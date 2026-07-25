@@ -8,11 +8,13 @@ interface Props {
   loading?: boolean;
 }
 
+/* Accent maps to the small index tick above the numeral — the card itself
+   stays paper-neutral so the ledger reads as one document. */
 const ACCENTS: Record<string, string> = {
-  violet: "from-violet-500/20 to-violet-500/0 text-violet-300",
-  amber: "from-amber-500/20 to-amber-500/0 text-amber-300",
-  emerald: "from-emerald-500/20 to-emerald-500/0 text-emerald-300",
-  red: "from-red-500/20 to-red-500/0 text-red-300",
+  violet: "bg-ink",
+  amber: "bg-crimson",
+  emerald: "bg-verdant",
+  red: "bg-brass",
 };
 
 function easeOutCubic(t: number): number {
@@ -60,18 +62,19 @@ export default function StatCard({
   const display = useCountUp(value);
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br ${ACCENTS[accent]} bg-slate-900/60 p-4 shadow-sm`}
-    >
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+    <div className="bg-card p-4">
+      <span className={`block h-1 w-8 ${ACCENTS[accent]}`} />
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
           {label}
         </p>
-        {icon && <span className="[&>svg]:h-5 [&>svg]:w-5 opacity-80">{icon}</span>}
+        {icon && (
+          <span className="text-ink-faint [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
+        )}
       </div>
-      <p className="mt-2 text-3xl font-bold tabular-nums text-white">
+      <p className="mt-1 font-display text-4xl font-semibold tabular-nums text-ink">
         {loading ? (
-          <span className="inline-block h-8 w-14 animate-pulse rounded bg-white/10" />
+          <span className="skeleton inline-block h-9 w-14 align-middle" />
         ) : (
           display
         )}

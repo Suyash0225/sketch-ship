@@ -5,28 +5,26 @@ interface Props {
   size?: "sm" | "md";
 }
 
-const STYLES: Record<string, string> = {
-  YouTube: "bg-red-500/15 text-red-400 border-red-500/40",
-  X: "bg-slate-200/10 text-slate-100 border-slate-300/30",
-  Instagram: "bg-pink-500/15 text-pink-400 border-pink-500/40",
-};
-
 const ICON: Record<string, typeof Play> = {
   YouTube: Play,
   X: XGlyph,
   Instagram: Camera,
 };
 
+/* Platforms are metadata, not brands, in a case file — quiet ink tags. */
 export default function PlatformBadge({ platform, size = "md" }: Props) {
-  const style = STYLES[platform] ?? "bg-zinc-500/15 text-zinc-300 border-zinc-500/40";
   const Icon = ICON[platform];
-  const pad = size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-xs";
+  const pad = size === "sm" ? "px-1.5 py-0.5" : "px-2 py-0.5";
   const iconSize = size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border font-semibold uppercase tracking-wide ${pad} ${style}`}
+      className={`inline-flex items-center gap-1.5 border border-ink/30 bg-card text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft ${pad}`}
     >
-      {Icon ? <Icon className={iconSize} aria-hidden /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
+      {Icon ? (
+        <Icon className={iconSize} aria-hidden />
+      ) : (
+        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      )}
       {platform}
     </span>
   );

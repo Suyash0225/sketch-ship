@@ -35,7 +35,7 @@ export default function Onboarding({ onDone }: Props) {
     setError(null);
     try {
       await postProfile(form);
-      showToast(`Welcome, ${form.name.split(" ")[0] || "creator"} — profile saved.`, "success");
+      showToast(`Welcome, ${form.name.split(" ")[0] || "creator"} — you are the claimant of record.`, "success");
       onDone();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not save profile.");
@@ -49,26 +49,30 @@ export default function Onboarding({ onDone }: Props) {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center">
       <div className="mb-8 text-center">
-        <Ghost className="mx-auto mb-3 h-12 w-12 text-violet-400 drop-shadow-[0_0_10px_rgba(139,92,246,0.55)]" />
-        <h1 className="text-2xl font-bold text-white">Welcome to GhostTrace</h1>
-        <p className="mt-2 text-sm text-slate-400">
+        <Ghost className="mx-auto mb-3 h-12 w-12 stroke-[1.5] text-ink" />
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-faint">
+          Form GT-1 · Claimant Registration
+        </p>
+        <h1 className="mt-1 font-display text-3xl tracking-tight text-ink">
+          Claimant of Record
+        </h1>
+        <p className="mx-auto mt-3 max-w-sm text-xs leading-relaxed text-ink-soft">
           Tell us who you are so we can file DMCA takedowns on your behalf. This
-          info goes straight into the notices we generate — no account, no
-          password.
+          info goes straight into the notices we generate — no account, no password.
         </p>
       </div>
 
       <form
         onSubmit={submit}
-        className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/60 p-6 shadow-xl"
+        className="space-y-5 border border-line bg-card p-6 shadow-[4px_5px_0_0_rgba(33,29,20,0.1)]"
       >
         {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <div className="border-l-4 border-crimson bg-crimson-wash px-3 py-2 text-xs text-crimson-deep">
             {error}
           </div>
         )}
 
-        <Field label="Full name" required>
+        <Field label="Full legal name" required>
           <input
             required
             value={form.name}
@@ -113,17 +117,17 @@ export default function Onboarding({ onDone }: Props) {
           <button
             type="submit"
             disabled={submitting}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 font-semibold text-white shadow transition hover:bg-violet-500 disabled:opacity-60"
+            className="flex flex-1 cursor-pointer items-center justify-center gap-2 border-2 border-ink bg-ink px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-paper shadow-[3px_3px_0_0_#b23a30] transition hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#b23a30] active:translate-y-0.5 active:shadow-[1px_1px_0_0_#b23a30] disabled:opacity-60"
           >
-            {submitting && <Spinner size={16} />}
-            {submitting ? "Saving…" : "Save & continue"}
+            {submitting && <Spinner size={14} />}
+            {submitting ? "Entering record…" : "Sign & continue"}
           </button>
           <button
             type="button"
             onClick={fillDemo}
-            className="shrink-0 rounded-lg border border-white/15 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/5"
+            className="shrink-0 cursor-pointer border border-line px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-soft transition hover:border-ink hover:text-ink"
           >
-            Use Demo Profile
+            Use demo profile
           </button>
         </div>
       </form>
@@ -132,7 +136,7 @@ export default function Onboarding({ onDone }: Props) {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500";
+  "w-full border-0 border-b-2 border-line bg-transparent px-1 py-2 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-crimson focus:outline-none";
 
 function Field({
   label,
@@ -145,9 +149,9 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-slate-400">
+      <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
         {label}
-        {required && <span className="text-violet-400"> *</span>}
+        {required && <span className="text-crimson"> *</span>}
       </span>
       {children}
     </label>

@@ -11,6 +11,8 @@ interface Props {
   onGenerate: () => void;
 }
 
+/* The notice renders as the typed legal document it is: a white sheet with a
+   red margin rule, and a FILED stamp struck across the corner once filed. */
 export default function DmcaPreview({
   platform,
   status,
@@ -33,34 +35,32 @@ export default function DmcaPreview({
   };
 
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/60 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-200">
+    <div className="border border-line bg-card p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink">
           DMCA Notice — {platform}
         </p>
         {status === "filed" && (
-          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
-            FILED{filedAt ? ` · ${new Date(filedAt).toLocaleTimeString()}` : ""}
+          <span className="stamp stamp-tilt text-verdant">
+            Filed{filedAt ? ` · ${new Date(filedAt).toLocaleTimeString()}` : ""}
           </span>
         )}
         {status === "preview" && (
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-300">
-            PREVIEW ONLY
-          </span>
+          <span className="stamp stamp-tilt text-brass">Draft — not filed</span>
         )}
       </div>
 
       {status === "idle" && (
         <button
           onClick={onGenerate}
-          className="w-full rounded-lg border border-violet-500/40 bg-violet-500/10 px-4 py-2.5 text-sm font-medium text-violet-300 transition hover:bg-violet-500/20"
+          className="w-full cursor-pointer border border-ink bg-card px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink transition hover:bg-ink hover:text-card"
         >
-          Generate DMCA preview for {platform}
+          Draft DMCA notice for {platform}
         </button>
       )}
 
       {status === "loading" && (
-        <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-400">
+        <div className="flex items-center justify-center gap-2 py-8 text-xs text-ink-soft">
           <Spinner size={18} />
           Drafting notice with Gemini…
         </div>
@@ -68,10 +68,10 @@ export default function DmcaPreview({
 
       {status === "error" && (
         <div className="space-y-2">
-          <p className="text-sm text-red-300">{errorMessage ?? "Could not generate preview."}</p>
+          <p className="text-xs text-crimson-deep">{errorMessage ?? "Could not generate preview."}</p>
           <button
             onClick={onGenerate}
-            className="rounded-lg border border-red-400/40 px-3 py-1.5 text-xs font-semibold text-red-200 hover:bg-red-500/10"
+            className="stamp cursor-pointer text-crimson transition hover:bg-crimson hover:text-card"
           >
             Retry
           </button>
@@ -80,16 +80,25 @@ export default function DmcaPreview({
 
       {(status === "preview" || status === "filed") && noticeText && (
         <div className="relative">
-          <pre className="max-h-80 overflow-auto rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate-300">
-            {noticeText}
-          </pre>
+          <div className="relative max-h-80 overflow-auto border border-line bg-white shadow-[2px_3px_0_0_rgba(33,29,20,0.08)]">
+            {/* red margin rule, like a typed legal sheet */}
+            <span className="pointer-events-none absolute inset-y-0 left-9 w-px bg-crimson/30" />
+            <pre className="whitespace-pre-wrap py-4 pl-14 pr-6 font-mono text-xs leading-relaxed text-ink">
+              {noticeText}
+            </pre>
+            {status === "filed" && (
+              <span className="stamp pointer-events-none absolute right-4 top-4 rotate-[-8deg] text-base text-verdant/80">
+                Filed
+              </span>
+            )}
+          </div>
           <button
             onClick={copy}
-            className="absolute top-2 right-2 flex items-center gap-1 rounded-md border border-white/15 bg-slate-900/90 px-2.5 py-1 text-xs font-medium text-slate-200 shadow transition hover:bg-slate-800"
+            className="absolute bottom-2 right-2 flex cursor-pointer items-center gap-1 border border-line bg-card px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.1em] text-ink-soft shadow transition hover:bg-well"
           >
             {copied ? (
               <>
-                <Check className="h-3 w-3 text-emerald-400" /> Copied
+                <Check className="h-3 w-3 text-verdant" /> Copied
               </>
             ) : (
               <>

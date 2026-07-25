@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext";
 import Spinner from "../components/Spinner";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
+import { formatDate } from "../lib/format";
 
 interface PendingUpload {
   tempId: string;
@@ -16,17 +17,6 @@ interface PendingUpload {
 function truncateHash(hash: string): string {
   if (hash.length <= 16) return hash;
   return `${hash.slice(0, 10)}…${hash.slice(-6)}`;
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export default function Assets() {
@@ -66,7 +56,7 @@ export default function Assets() {
       const asset = await postAsset(file);
       setAssets((prev) => [asset, ...prev]);
       showToast(
-        `Asset uploaded — Gemini fingerprinted "${asset.fingerprint?.subject ?? asset.filename}".`,
+        `Exhibit entered — Gemini fingerprinted "${asset.fingerprint?.subject ?? asset.filename}".`,
         "success"
       );
       refreshStats();
@@ -120,10 +110,13 @@ export default function Assets() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Protected Assets</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Every upload gets a SHA-256 fingerprint and a Gemini-generated visual
-          description used to detect leaks.
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-faint">
+          Original works under protection
+        </p>
+        <h1 className="mt-1 font-display text-4xl tracking-tight text-ink">Exhibits</h1>
+        <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-soft">
+          Every submission is catalogued with a SHA-256 fingerprint and a Gemini-generated
+          visual description used to detect leaks.
         </p>
       </div>
 
@@ -135,10 +128,10 @@ export default function Assets() {
         onDragLeave={() => setDragActive(false)}
         onDrop={onDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
+        className={`flex cursor-pointer flex-col items-center justify-center border-2 border-dashed px-6 py-10 text-center transition ${
           dragActive
-            ? "border-violet-400 bg-violet-500/10"
-            : "border-white/15 bg-slate-900/40 hover:border-violet-500/50 hover:bg-slate-900/60"
+            ? "border-crimson bg-crimson-wash/50"
+            : "border-line bg-card/60 hover:border-ink-faint hover:bg-card"
         }`}
       >
         <input
@@ -152,12 +145,12 @@ export default function Assets() {
             e.target.value = "";
           }}
         />
-        <UploadCloud className="mb-2 h-8 w-8 text-slate-400" />
-        <p className="font-medium text-slate-200">
-          Drag &amp; drop images here, or click to browse
+        <UploadCloud className="mb-2 h-8 w-8 stroke-[1.5] text-ink-faint" />
+        <p className="text-sm font-medium text-ink">
+          Submit evidence — drag &amp; drop images, or click to browse
         </p>
-        <p className="mt-1 text-xs text-slate-500">
-          These become the originals GhostTrace protects and scans for.
+        <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+          These become the originals GhostTrace protects and sweeps for
         </p>
       </div>
 
@@ -166,37 +159,37 @@ export default function Assets() {
       ) : loading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="skeleton aspect-square rounded-xl" />
+            <div key={i} className="skeleton aspect-square" />
           ))}
         </div>
       ) : assets.length === 0 && pending.length === 0 ? (
         <EmptyState
           icon={<ImageIcon />}
-          title="No assets yet"
-          subtitle="Upload your first piece of content above to start protecting it."
+          title="No exhibits on file"
+          subtitle="Submit your first piece of content above to start protecting it."
         />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {pending.map((p) => (
             <div
               key={p.tempId}
-              className="relative aspect-square overflow-hidden rounded-xl border border-violet-500/40 bg-slate-900"
+              className="relative aspect-square overflow-hidden border border-line bg-card"
             >
-              <img src={p.previewUrl} alt={p.fileName} className="h-full w-full object-cover opacity-40" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/60 text-center">
-                <Spinner size={22} className="text-violet-400" />
-                <p className="px-2 text-xs font-medium text-violet-200">
+              <img src={p.previewUrl} alt={p.fileName} className="h-full w-full object-cover opacity-30" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-paper/70 text-center">
+                <Spinner size={20} className="text-ink" />
+                <p className="px-2 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-soft">
                   Fingerprinting with Gemini…
                 </p>
               </div>
             </div>
           ))}
-          {assets.map((asset) => (
+          {assets.map((asset, i) => (
             <div
               key={asset.id}
-              className="animate-fade-in group overflow-hidden rounded-xl border border-white/10 bg-slate-900/60 transition hover:border-violet-500/40"
+              className="animate-fade-in group border border-line bg-card p-2 transition hover:shadow-[3px_3px_0_0_rgba(33,29,20,0.12)]"
             >
-              <div className="aspect-square overflow-hidden bg-slate-950">
+              <div className="relative aspect-square overflow-hidden border border-line bg-well">
                 <img
                   src={uploadUrl(asset.path || asset.filename)}
                   alt={asset.fingerprint?.subject ?? asset.filename}
@@ -206,21 +199,24 @@ export default function Assets() {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
                 />
+                <span className="absolute left-1.5 top-1.5 bg-ink/85 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-paper">
+                  Ex. {String(assets.length - i).padStart(2, "0")}
+                </span>
               </div>
-              <div className="p-3">
-                <p className="truncate text-sm font-medium text-slate-200">
+              <div className="px-1 pb-1 pt-3">
+                <p className="truncate text-xs font-semibold text-ink">
                   {asset.fingerprint?.subject ?? asset.filename}
                 </p>
-                <p className="mt-1 truncate font-mono text-xs text-slate-500">
+                <p className="mt-1 truncate text-[11px] tabular-nums text-ink-faint">
                   {truncateHash(asset.sha256)}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500">{formatDate(asset.uploaded_at)}</p>
+                <p className="mt-0.5 text-[11px] text-ink-faint">{formatDate(asset.uploaded_at)}</p>
                 {asset.fingerprint && asset.fingerprint.dominant_colors.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {asset.fingerprint.dominant_colors.slice(0, 4).map((c) => (
                       <span
                         key={c}
-                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-slate-400"
+                        className="border border-line bg-paper px-1.5 py-0.5 text-[10px] text-ink-soft"
                       >
                         {c}
                       </span>
@@ -231,11 +227,11 @@ export default function Assets() {
                   type="button"
                   onClick={() => runWebScan(asset)}
                   disabled={webScanningId === asset.id}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-2 py-1.5 text-xs font-medium text-violet-200 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-3 flex w-full cursor-pointer items-center justify-center gap-1.5 border border-ink px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {webScanningId === asset.id ? (
                     <>
-                      <Spinner size={12} className="text-violet-300" />
+                      <Spinner size={12} />
                       Searching Google…
                     </>
                   ) : (

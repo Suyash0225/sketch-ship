@@ -42,7 +42,7 @@ class Incident(BaseModel):
     reasoning: str
     status: str  # "DETECTED" | "FILED" | "IN_REVIEW" | "RESOLVED"
     detected_at: str
-    source: str = "SYNTHETIC"  # "SYNTHETIC" (seeded /scan) | "GOOGLE_VISION" (real /web-scan)
+    source: str = "SYNTHETIC"  # "SYNTHETIC" (seeded /scan) | "SERPAPI" (real /web-scan)
 
 
 class Takedown(BaseModel):

@@ -13,6 +13,7 @@ import StatCard from "../components/StatCard";
 import Spinner from "../components/Spinner";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
+import { timeAgo } from "../lib/format";
 
 const ACTION_ICON: Record<string, typeof Upload> = {
   ASSET_UPLOADED: Upload,
@@ -21,16 +22,6 @@ const ACTION_ICON: Record<string, typeof Upload> = {
   DMCA_FILED: FileText,
   NUKE_TRIGGERED: Bomb,
 };
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
 
 export default function Dashboard() {
   const { stats, statsLoading, refreshStats } = useAppStatus();
@@ -62,8 +53,8 @@ export default function Dashboard() {
       const n = result.new_incidents.length;
       showToast(
         n > 0
-          ? `Scan complete — ${n} new incident${n === 1 ? "" : "s"} detected.`
-          : "Scan complete — no new incidents detected.",
+          ? `Scan complete — ${n} new case${n === 1 ? "" : "s"} opened.`
+          : "Scan complete — no new infringements found.",
         n > 0 ? "success" : "info"
       );
       await Promise.all([refreshStats(), loadActivity()]);
@@ -78,40 +69,42 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <section>
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Your protected content, at a glance.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-faint">
+              Status of matters ·{" "}
+              {new Date().toLocaleDateString(undefined, { dateStyle: "long" })}
             </p>
+            <h1 className="mt-1 font-display text-4xl tracking-tight text-ink">The Docket</h1>
           </div>
           <button
             onClick={runScan}
             disabled={scanning}
-            className={`group relative flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 font-semibold text-white shadow-lg shadow-violet-900/30 transition hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-70 ${
-              scanning ? "" : "animate-cta-glow"
-            }`}
+            className="flex cursor-pointer items-center gap-2 border-2 border-ink bg-ink px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-paper shadow-[3px_3px_0_0_#b23a30] transition hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#b23a30] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_0_#b23a30] disabled:cursor-wait disabled:opacity-70"
           >
-            {scanning ? <Spinner size={18} /> : <Search className="h-[18px] w-[18px]" />}
-            {scanning ? "Scanning for leaks…" : "Run Scan"}
+            {scanning ? <Spinner size={16} /> : <Search className="h-4 w-4" />}
+            {scanning ? "Sweeping for leaks…" : "Run Sweep"}
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Assets" value={stats?.assets ?? 0} accent="violet" icon={<Image />} loading={statsLoading} />
-          <StatCard label="Incidents" value={stats?.incidents ?? 0} accent="amber" icon={<Siren />} loading={statsLoading} />
-          <StatCard label="Filed" value={stats?.filed ?? 0} accent="emerald" icon={<FileText />} loading={statsLoading} />
+        <div className="grid grid-cols-2 gap-px border border-line bg-line lg:grid-cols-4">
+          <StatCard label="Exhibits on file" value={stats?.assets ?? 0} accent="violet" icon={<Image />} loading={statsLoading} />
+          <StatCard label="Open cases" value={stats?.incidents ?? 0} accent="amber" icon={<Siren />} loading={statsLoading} />
+          <StatCard label="Notices filed" value={stats?.filed ?? 0} accent="emerald" icon={<FileText />} loading={statsLoading} />
           <StatCard label="Resolved" value={stats?.resolved ?? 0} accent="red" icon={<CheckCircle2 />} loading={statsLoading} />
         </div>
       </section>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Recent activity</h2>
-          <Link to="/activity" className="text-sm font-medium text-violet-400 hover:text-violet-300">
-            View all →
+        <div className="mb-3 flex items-baseline justify-between border-b border-ink pb-2">
+          <h2 className="font-display text-2xl text-ink">Latest on record</h2>
+          <Link
+            to="/activity"
+            className="text-[11px] font-semibold uppercase tracking-[0.14em] text-crimson hover:text-crimson-deep"
+          >
+            Full record →
           </Link>
         </div>
 
@@ -120,49 +113,53 @@ export default function Dashboard() {
         ) : activityLoading ? (
           <div className="space-y-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton h-14 rounded-lg" />
+              <div key={i} className="skeleton h-12" />
             ))}
           </div>
         ) : activity.length === 0 ? (
           <EmptyState
             icon={<Radar />}
-            title="No activity yet"
-            subtitle="Upload an asset and run a scan to start building your audit trail."
+            title="Nothing on record yet"
+            subtitle="Submit an exhibit and run a sweep to start building your audit trail."
             action={
               <Link
                 to="/assets"
-                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-500"
+                className="border-2 border-ink bg-ink px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-paper transition hover:bg-crimson hover:border-crimson"
               >
-                Upload your first asset
+                Submit your first exhibit
               </Link>
             }
           />
         ) : (
-          <ul className="divide-y divide-white/5 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
+          <ul>
             {activity.map((entry) => {
               const Icon = ACTION_ICON[entry.action];
               const iconEl = Icon ? (
-                <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+                <Icon className="h-4 w-4 shrink-0 text-ink-faint" />
               ) : (
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-500" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ink-faint" />
+              );
+              const row = (
+                <>
+                  {iconEl}
+                  <span className="flex-1 truncate text-xs text-ink">{entry.details}</span>
+                  <span className="ledger-dots" />
+                  <span className="shrink-0 text-[11px] tabular-nums text-ink-faint">
+                    {timeAgo(entry.timestamp)}
+                  </span>
+                </>
               );
               return (
-                <li key={entry.id}>
+                <li key={entry.id} className="border-b border-dashed border-line last:border-b-0">
                   {entry.incident_id ? (
                     <Link
                       to={`/incidents/${entry.incident_id}`}
-                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-white/5"
+                      className="ledger-row px-1 py-3 transition hover:bg-card"
                     >
-                      {iconEl}
-                      <span className="flex-1 truncate text-sm text-slate-200">{entry.details}</span>
-                      <span className="shrink-0 text-xs text-slate-500">{timeAgo(entry.timestamp)}</span>
+                      {row}
                     </Link>
                   ) : (
-                    <div className="flex items-center gap-3 px-4 py-3">
-                      {iconEl}
-                      <span className="flex-1 truncate text-sm text-slate-200">{entry.details}</span>
-                      <span className="shrink-0 text-xs text-slate-500">{timeAgo(entry.timestamp)}</span>
-                    </div>
+                    <div className="ledger-row px-1 py-3">{row}</div>
                   )}
                 </li>
               );

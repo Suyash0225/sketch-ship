@@ -10,12 +10,12 @@ interface Props {
 
 export default function EmptyState({ icon, title, subtitle, action }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-slate-900/40 px-6 py-16 text-center">
-      <span className="mb-3 text-slate-500 opacity-70 [&>svg]:h-10 [&>svg]:w-10">
+    <div className="flex flex-col items-center justify-center border-2 border-dashed border-line bg-card/60 px-6 py-16 text-center">
+      <span className="mb-3 text-ink-faint [&>svg]:h-10 [&>svg]:w-10 [&>svg]:stroke-[1.5]">
         {icon ?? <Ghost />}
       </span>
-      <p className="text-base font-semibold text-slate-200">{title}</p>
-      {subtitle && <p className="mt-1 max-w-sm text-sm text-slate-400">{subtitle}</p>}
+      <p className="font-display text-xl text-ink">{title}</p>
+      {subtitle && <p className="mt-2 max-w-sm text-xs leading-relaxed text-ink-soft">{subtitle}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

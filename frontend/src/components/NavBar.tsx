@@ -1,57 +1,89 @@
 import { NavLink } from "react-router-dom";
-import { Ghost, Sun, Moon } from "lucide-react";
+import { Ghost } from "lucide-react";
 import { useAppStatus } from "../context/AppStatusContext";
-import { useTheme } from "../context/ThemeContext";
 
 const LINKS = [
-  { to: "/", label: "Dashboard", end: true },
-  { to: "/assets", label: "Assets" },
-  { to: "/incidents", label: "Incidents" },
-  { to: "/activity", label: "Activity" },
+  { to: "/", label: "Docket", end: true },
+  { to: "/assets", label: "Exhibits" },
+  { to: "/incidents", label: "Cases" },
+  { to: "/activity", label: "Record" },
 ];
 
-function MiniStat({
-  label,
-  value,
-  dotClass,
-}: {
-  label: string;
-  value: number | string;
-  dotClass: string;
-}) {
+function Tally({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-300 sm:flex">
-      <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} />
-      <span className="tabular-nums text-white">{value}</span>
-      <span className="text-slate-400">{label}</span>
+    <div className="hidden items-baseline gap-1.5 text-[11px] uppercase tracking-[0.12em] text-ink-faint sm:flex">
+      <span className="font-semibold tabular-nums text-ink">
+        {typeof value === "number" ? String(value).padStart(2, "0") : value}
+      </span>
+      <span>{label}</span>
     </div>
   );
 }
 
 export default function NavBar({ hasProfile }: { hasProfile: boolean | null }) {
   const { stats, backendReachable } = useAppStatus();
-  const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <NavLink to="/" className="flex shrink-0 items-center gap-2 font-bold text-white">
-          <Ghost className="h-6 w-6 text-violet-400 drop-shadow-[0_0_6px_rgba(139,92,246,0.6)]" />
-          <span className="hidden sm:inline">GhostTrace</span>
-        </NavLink>
+    <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-sm">
+      <div className="rule-double mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6 py-4">
+          <NavLink to="/" className="flex shrink-0 items-center gap-2 text-ink">
+            <Ghost className="h-6 w-6 stroke-[1.75]" />
+            <span className="font-display text-xl font-semibold tracking-tight">
+              GhostTrace
+            </span>
+            <span className="mt-0.5 hidden text-[10px] uppercase tracking-[0.22em] text-ink-faint lg:inline">
+              · Content Protection Docket
+            </span>
+          </NavLink>
+
+          <div className="ml-auto flex items-center gap-4">
+            <Tally label="Exhibits" value={stats?.assets ?? "–"} />
+            <Tally label="Cases" value={stats?.incidents ?? "–"} />
+            <Tally label="Filed" value={stats?.filed ?? "–"} />
+
+            <div
+              title={
+                backendReachable === false
+                  ? "Backend unreachable"
+                  : backendReachable === null
+                  ? "Checking backend…"
+                  : "Backend connected"
+              }
+              className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em]"
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  backendReachable === false
+                    ? "bg-crimson"
+                    : backendReachable === null
+                    ? "animate-pulse bg-ink-faint"
+                    : "bg-verdant"
+                }`}
+              />
+              <span className="hidden text-ink-faint md:inline">
+                {backendReachable === false
+                  ? "Offline"
+                  : backendReachable === null
+                  ? "Connecting"
+                  : "On record"}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {hasProfile && (
-          <nav className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 text-sm">
+          <nav className="flex gap-6 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
             {LINKS.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 end={l.end}
                 className={({ isActive }) =>
-                  `rounded-full px-3 py-1.5 font-medium transition ${
+                  `border-b-2 pb-1.5 transition ${
                     isActive
-                      ? "bg-violet-500/90 text-white shadow"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      ? "border-crimson text-ink"
+                      : "border-transparent text-ink-faint hover:border-line hover:text-ink"
                   }`
                 }
               >
@@ -60,50 +92,6 @@ export default function NavBar({ hasProfile }: { hasProfile: boolean | null }) {
             ))}
           </nav>
         )}
-
-        <div className="ml-auto flex items-center gap-2">
-          <MiniStat label="assets" value={stats?.assets ?? "–"} dotClass="bg-violet-400" />
-          <MiniStat label="incidents" value={stats?.incidents ?? "–"} dotClass="bg-amber-400" />
-          <MiniStat label="filed" value={stats?.filed ?? "–"} dotClass="bg-emerald-400" />
-
-          <div
-            title={
-              backendReachable === false
-                ? "Backend unreachable"
-                : backendReachable === null
-                ? "Checking backend…"
-                : "Backend connected"
-            }
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium"
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                backendReachable === false
-                  ? "bg-red-500"
-                  : backendReachable === null
-                  ? "bg-zinc-500 animate-pulse"
-                  : "bg-emerald-500"
-              }`}
-            />
-            <span className="hidden text-slate-400 md:inline">
-              {backendReachable === false
-                ? "offline"
-                : backendReachable === null
-                ? "connecting"
-                : "online"}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
-          >
-            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-          </button>
-        </div>
       </div>
     </header>
   );
