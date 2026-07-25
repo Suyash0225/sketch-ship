@@ -1,0 +1,260 @@
+{
+  "profile": {
+    "name": "NAMRATESH SHRIVASTAV",
+    "email": "namra@gmail.com",
+    "address": "tower e",
+    "phone": "9989876678"
+  },
+  "assets": [
+    {
+      "id": "9d8c594e7f4243d1a36da9f00c31e850",
+      "filename": "9d8c594e7f4243d1a36da9f00c31e850_original.png",
+      "sha256": "26335e938d3450e5c6bd043439a30df9b474bd924619050a28c1cada1922ad93",
+      "uploaded_at": "2026-07-25T05:34:07.597303+00:00",
+      "path": "/uploads/9d8c594e7f4243d1a36da9f00c31e850_original.png",
+      "fingerprint": null
+    },
+    {
+      "id": "54a51a59ddf547b0a8733d06fafea277",
+      "filename": "54a51a59ddf547b0a8733d06fafea277_original.png",
+      "sha256": "cfa2771b0093e7df7c82901798e90f8122cbf8e8699265def7a5dc389f365957",
+      "uploaded_at": "2026-07-25T05:34:07.600236+00:00",
+      "path": "/uploads/54a51a59ddf547b0a8733d06fafea277_original.png",
+      "fingerprint": null
+    },
+    {
+      "id": "0a7eb03967c247a79f22da57427d7bd4",
+      "filename": "0a7eb03967c247a79f22da57427d7bd4_original.png",
+      "sha256": "293f710158a5b3c594457b89446a8c3b5212a8e403e045d88520d5333dd4691c",
+      "uploaded_at": "2026-07-25T05:34:07.602302+00:00",
+      "path": "/uploads/0a7eb03967c247a79f22da57427d7bd4_original.png",
+      "fingerprint": null
+    },
+    {
+      "id": "06fa10f2c7204a7cbbb225394344516b",
+      "filename": "WhatsApp Image 2026-06-08 at 21.39.17.jpeg",
+      "sha256": "2d22950586dfbe233e1f4b1a37aac6e290908c2e070af6f5d917f4a2084563aa",
+      "uploaded_at": "2026-07-25T05:42:51.798039+00:00",
+      "path": "/uploads/06fa10f2c7204a7cbbb225394344516b.jpeg",
+      "fingerprint": {
+        "subject": "Portrait of a man with a full beard wearing a dark brown shirt",
+        "dominant_colors": [
+          "dark brown",
+          "off-white",
+          "black",
+          "tan"
+        ],
+        "distinguishing_features": [
+          "Full dark beard and mustache",
+          "Mandarin collar dark brown button-up shirt",
+          "Dark brown hair styled upward",
+          "Plain, light off-white background",
+          "Direct eye contact with neutral expression"
+        ]
+      }
+    },
+    {
+      "id": "7f7be4f107764361a32022c7c858b5c5",
+      "filename": "google_logo.png",
+      "sha256": "262084257c2103702ef8a25705e3f8dbc1fa3823103ad7b954d54bdb77e6d89d",
+      "uploaded_at": "2026-07-25T05:46:35.832397+00:00",
+      "path": "/uploads/7f7be4f107764361a32022c7c858b5c5.png",
+      "fingerprint": {
+        "subject": "Uploaded creative asset",
+        "dominant_colors": [
+          "blue",
+          "white"
+        ],
+        "distinguishing_features": [
+          "high-contrast geometric shape",
+          "bold centered text label",
+          "flat solid background fill"
+        ]
+      }
+    },
+    {
+      "id": "a0797316142e448b8765cc5cc18a8df1",
+      "filename": "google_logo.png",
+      "sha256": "262084257c2103702ef8a25705e3f8dbc1fa3823103ad7b954d54bdb77e6d89d",
+      "uploaded_at": "2026-07-25T05:48:43.440166+00:00",
+      "path": "/uploads/a0797316142e448b8765cc5cc18a8df1.png",
+      "fingerprint": {
+        "subject": "Uploaded creative asset",
+        "dominant_colors": [
+          "blue",
+          "white"
+        ],
+        "distinguishing_features": [
+          "flat solid background fill",
+          "sharp unaliased edges",
+          "bold centered text label"
+        ]
+      }
+    }
+  ],
+  "incidents": [
+    {
+      "id": "a60cff7d7b5c441797eb77ac6de6d54a",
+      "asset_id": "9d8c594e7f4243d1a36da9f00c31e850",
+      "platform": "YouTube",
+      "leak_image_path": "/seed_leaks/d63c6b1e5d644b93a798e62544654e3e_leak.png",
+      "leak_url": "https://youtube.com/watch?v=demod63c6b1e",
+      "similarity_score": 95,
+      "reasoning": "Image B is a rotated derivative of Image A containing the exact same graphical elements and text content.",
+      "status": "DETECTED",
+      "detected_at": "2026-07-25T05:47:07.376465+00:00"
+    },
+    {
+      "id": "3435e4df8a3f440fb8aff33c8d423bff",
+      "asset_id": "54a51a59ddf547b0a8733d06fafea277",
+      "platform": "X",
+      "leak_image_path": "/seed_leaks/0cb4d8776f9748769a2b3e31246d67ca_leak.png",
+      "leak_url": "https://x.com/leakedmedia0cb4d877/status/10cb4d877",
+      "similarity_score": 95,
+      "reasoning": "Image B is a cropped version of Image A, containing the exact same text, color scheme, and geometric shapes.",
+      "status": "DETECTED",
+      "detected_at": "2026-07-25T05:47:14.901711+00:00"
+    },
+    {
+      "id": "8c293eecfc714884b5711467f2b3a071",
+      "asset_id": "9d8c594e7f4243d1a36da9f00c31e850",
+      "platform": "YouTube",
+      "leak_image_path": "/seed_leaks/374fec4e6047436a9591c313a62dc65f_leak.png",
+      "leak_url": "https://youtube.com/watch?v=demo374fec4e",
+      "similarity_score": 87,
+      "reasoning": "Fallback heuristic: images share matching structure and palette consistent with a re-upload.",
+      "status": "DETECTED",
+      "detected_at": "2026-07-25T05:47:20.441683+00:00"
+    },
+    {
+      "id": "52ff3dae4dc54973bbff6e0ced891f84",
+      "asset_id": "9d8c594e7f4243d1a36da9f00c31e850",
+      "platform": "Instagram",
+      "leak_image_path": "/seed_leaks/ac0e69bcb32840cc9518a8c976250621_leak.png",
+      "leak_url": "https://instagram.com/p/leaked_ac0e69bc/",
+      "similarity_score": 87,
+      "reasoning": "Fallback heuristic: images share matching structure and palette consistent with a re-upload.",
+      "status": "FILED",
+      "detected_at": "2026-07-25T05:48:53.600155+00:00"
+    }
+  ],
+  "takedowns": [
+    {
+      "id": "b2de9176ac7b41c6a87fc7666f1bc7bc",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84",
+      "platform": "YouTube",
+      "notice_text": "DMCA TAKEDOWN NOTICE\n\nTo: YouTube Copyright Agent (via Web form (copyright.youtube.com))\nFrom: NAMRATESH SHRIVASTAV\nEmail: namra@gmail.com\nAddress: tower e\nPhone: 9989876678\n\nI am the copyright owner of the original work described below, and I have\na good faith belief that the material identified is being used without my\nauthorization on YouTube.\n\nDescription of copyrighted work: A creative asset uploaded by the creator.\n\nLocation of infringing material: https://instagram.com/p/leaked_ac0e69bc/\n\nOur automated visual-similarity system flagged this content with a\nsimilarity score of 87/100. Reasoning: Fallback heuristic: images share matching structure and palette consistent with a re-upload.\n\nI have a good faith belief that use of the copyrighted material described\nabove is not authorized by the copyright owner, its agent, or the law.\n\nI swear, under penalty of perjury, that the information in this\nnotification is accurate and that I am the copyright owner, or am\nauthorized to act on behalf of the owner, of an exclusive right that is\nallegedly infringed.\n\nSignature: NAMRATESH SHRIVASTAV\nDate: (auto-generated by GhostTrace)\n",
+      "filed_at": "2026-07-25T05:51:33.010498+00:00",
+      "status": "FILED"
+    },
+    {
+      "id": "d3d5180ce54648738da9479fd1b033b3",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84",
+      "platform": "X",
+      "notice_text": "DMCA TAKEDOWN NOTICE\n\nTo: X Copyright Agent (via Web form (help.x.com/forms/dmca))\nFrom: NAMRATESH SHRIVASTAV\nEmail: namra@gmail.com\nAddress: tower e\nPhone: 9989876678\n\nI am the copyright owner of the original work described below, and I have\na good faith belief that the material identified is being used without my\nauthorization on X.\n\nDescription of copyrighted work: A creative asset uploaded by the creator.\n\nLocation of infringing material: https://instagram.com/p/leaked_ac0e69bc/\n\nOur automated visual-similarity system flagged this content with a\nsimilarity score of 87/100. Reasoning: Fallback heuristic: images share matching structure and palette consistent with a re-upload.\n\nI have a good faith belief that use of the copyrighted material described\nabove is not authorized by the copyright owner, its agent, or the law.\n\nI swear, under penalty of perjury, that the information in this\nnotification is accurate and that I am the copyright owner, or am\nauthorized to act on behalf of the owner, of an exclusive right that is\nallegedly infringed.\n\nSignature: NAMRATESH SHRIVASTAV\nDate: (auto-generated by GhostTrace)\n",
+      "filed_at": "2026-07-25T05:51:33.364058+00:00",
+      "status": "FILED"
+    },
+    {
+      "id": "119b18bb26ae448b88ada118ee56279a",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84",
+      "platform": "Instagram",
+      "notice_text": "DMCA TAKEDOWN NOTICE\n\nTo: Instagram Copyright Agent (via Web form (help.instagram.com \u2014 Meta IP reporting form))\nFrom: NAMRATESH SHRIVASTAV\nEmail: namra@gmail.com\nAddress: tower e\nPhone: 9989876678\n\nI am the copyright owner of the original work described below, and I have\na good faith belief that the material identified is being used without my\nauthorization on Instagram.\n\nDescription of copyrighted work: A creative asset uploaded by the creator.\n\nLocation of infringing material: https://instagram.com/p/leaked_ac0e69bc/\n\nOur automated visual-similarity system flagged this content with a\nsimilarity score of 87/100. Reasoning: Fallback heuristic: images share matching structure and palette consistent with a re-upload.\n\nI have a good faith belief that use of the copyrighted material described\nabove is not authorized by the copyright owner, its agent, or the law.\n\nI swear, under penalty of perjury, that the information in this\nnotification is accurate and that I am the copyright owner, or am\nauthorized to act on behalf of the owner, of an exclusive right that is\nallegedly infringed.\n\nSignature: NAMRATESH SHRIVASTAV\nDate: (auto-generated by GhostTrace)\n",
+      "filed_at": "2026-07-25T05:51:33.557699+00:00",
+      "status": "FILED"
+    }
+  ],
+  "activity": [
+    {
+      "id": "3c95b40bd789472994d10404ef676daa",
+      "timestamp": "2026-07-25T05:42:51.799062+00:00",
+      "action": "ASSET_UPLOADED",
+      "details": "Uploaded asset 'WhatsApp Image 2026-06-08 at 21.39.17.jpeg' (sha256 2d22950586df...)",
+      "incident_id": null
+    },
+    {
+      "id": "1437a13e5c2c4ecc8d4fb2ebea6f0217",
+      "timestamp": "2026-07-25T05:46:35.833455+00:00",
+      "action": "ASSET_UPLOADED",
+      "details": "Uploaded asset 'google_logo.png' (sha256 262084257c21...)",
+      "incident_id": null
+    },
+    {
+      "id": "442b48fac2d84f6b8f4eef526fab9974",
+      "timestamp": "2026-07-25T05:47:07.376576+00:00",
+      "action": "INCIDENT_DETECTED",
+      "details": "Detected leak on YouTube (score 95) for asset 9d8c594e7f4243d1a36da9f00c31e850",
+      "incident_id": "a60cff7d7b5c441797eb77ac6de6d54a"
+    },
+    {
+      "id": "8c3e4f951e944721aa5eef0009eca79b",
+      "timestamp": "2026-07-25T05:47:14.901801+00:00",
+      "action": "INCIDENT_DETECTED",
+      "details": "Detected leak on X (score 95) for asset 54a51a59ddf547b0a8733d06fafea277",
+      "incident_id": "3435e4df8a3f440fb8aff33c8d423bff"
+    },
+    {
+      "id": "6b9ff7ef07ce44848fddf8dee992113e",
+      "timestamp": "2026-07-25T05:47:20.441784+00:00",
+      "action": "INCIDENT_DETECTED",
+      "details": "Detected leak on YouTube (score 87) for asset 9d8c594e7f4243d1a36da9f00c31e850",
+      "incident_id": "8c293eecfc714884b5711467f2b3a071"
+    },
+    {
+      "id": "290e4f05f5774c41a2bb4d23d23fc539",
+      "timestamp": "2026-07-25T05:47:20.441804+00:00",
+      "action": "SCAN_RUN",
+      "details": "Scan completed: 3 new incident(s) detected",
+      "incident_id": null
+    },
+    {
+      "id": "f353e1c493bc4802a6af7734994489b5",
+      "timestamp": "2026-07-25T05:48:43.441243+00:00",
+      "action": "ASSET_UPLOADED",
+      "details": "Uploaded asset 'google_logo.png' (sha256 262084257c21...)",
+      "incident_id": null
+    },
+    {
+      "id": "17c6dce0c164497e9ae29683b3c91ae7",
+      "timestamp": "2026-07-25T05:48:53.600248+00:00",
+      "action": "INCIDENT_DETECTED",
+      "details": "Detected leak on Instagram (score 87) for asset 9d8c594e7f4243d1a36da9f00c31e850",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84"
+    },
+    {
+      "id": "6e74528635f8440ea1e08def8852a352",
+      "timestamp": "2026-07-25T05:48:53.600263+00:00",
+      "action": "SCAN_RUN",
+      "details": "Scan completed: 1 new incident(s) detected",
+      "incident_id": null
+    },
+    {
+      "id": "e059c89ea9ed4832823bd6ac184347c8",
+      "timestamp": "2026-07-25T05:51:33.010648+00:00",
+      "action": "DMCA_FILED",
+      "details": "DMCA notice filed on YouTube for incident 52ff3dae4dc54973bbff6e0ced891f84",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84"
+    },
+    {
+      "id": "d087bf445f08436f92cedfabb129e02a",
+      "timestamp": "2026-07-25T05:51:33.364157+00:00",
+      "action": "DMCA_FILED",
+      "details": "DMCA notice filed on X for incident 52ff3dae4dc54973bbff6e0ced891f84",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84"
+    },
+    {
+      "id": "2c72b6ee566e41629be8784a541772f6",
+      "timestamp": "2026-07-25T05:51:33.557825+00:00",
+      "action": "DMCA_FILED",
+      "details": "DMCA notice filed on Instagram for incident 52ff3dae4dc54973bbff6e0ced891f84",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84"
+    },
+    {
+      "id": "b95d0d2fce8f425f87bbf474921dea4d",
+      "timestamp": "2026-07-25T05:51:33.557845+00:00",
+      "action": "NUKE_TRIGGERED",
+      "details": "Nuke triggered for incident 52ff3dae4dc54973bbff6e0ced891f84: filed on all 3 platforms",
+      "incident_id": "52ff3dae4dc54973bbff6e0ced891f84"
+    }
+  ]
+}
