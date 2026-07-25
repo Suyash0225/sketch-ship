@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel
 
 from .. import storage
@@ -184,10 +184,50 @@ def run_web_scan(asset_id: str) -> dict:
     return {"new_incidents": [i.model_dump() for i in new_incidents], "raw_match_count": len(matches)}
 
 
+def _incident_matches(incident: dict, needle: str) -> bool:
+    haystack = " ".join(
+        [
+            incident.get("platform", ""),
+            incident.get("leak_url", ""),
+            incident.get("reasoning", ""),
+            incident.get("status", ""),
+        ]
+    ).lower()
+    return needle in haystack
+
+
 @router.get("/incidents")
-def list_incidents() -> list[Incident]:
+def list_incidents(
+    response: Response,
+    limit: int | None = Query(None, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    q: str | None = None,
+    status: str | None = None,
+    source: str | None = None,
+    sort: str = Query("newest", pattern="^(newest|oldest|score)$"),
+) -> list[Incident]:
+    """Paginated + filterable case list. See list_assets() for why `limit`
+    is optional and why the pre-slice total rides along in X-Total-Count."""
     db = storage.read_db()
-    return db.get("incidents", [])
+    incidents: list[dict] = list(db.get("incidents", []))
+
+    if q:
+        needle = q.strip().lower()
+        incidents = [i for i in incidents if _incident_matches(i, needle)]
+    if status:
+        incidents = [i for i in incidents if i.get("status") == status]
+    if source:
+        incidents = [i for i in incidents if i.get("source") == source]
+
+    if sort == "score":
+        incidents.sort(key=lambda i: i.get("similarity_score") or 0, reverse=True)
+    else:
+        incidents.sort(key=lambda i: i.get("detected_at") or "", reverse=(sort == "newest"))
+
+    response.headers["X-Total-Count"] = str(len(incidents))
+    if limit is None:
+        return incidents[offset:]
+    return incidents[offset : offset + limit]
 
 
 @router.get("/incidents/{incident_id}")

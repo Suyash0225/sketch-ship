@@ -35,11 +35,11 @@ function Icon({ kind }: { kind: ToastKind }) {
 function accentClasses(kind: ToastKind) {
   switch (kind) {
     case "success":
-      return "border-l-verdant text-verdant";
+      return "border-verdant text-verdant shadow-[0_8px_30px_rgba(18,35,63,0.18),0_0_20px_rgba(14,159,126,0.2)]";
     case "error":
-      return "border-l-crimson text-crimson";
+      return "border-crimson text-crimson shadow-[0_8px_30px_rgba(18,35,63,0.18),0_0_20px_rgba(232,68,90,0.2)]";
     default:
-      return "border-l-ink text-ink-soft";
+      return "border-iris text-iris-soft shadow-[0_8px_30px_rgba(18,35,63,0.18),0_0_20px_rgba(37,99,235,0.2)]";
   }
 }
 
@@ -62,19 +62,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="pointer-events-none fixed top-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-2">
+      {/* Bottom-centre, over the content — the UV spec puts confirmations in
+          the operator's line of sight rather than off in a corner. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[100] flex flex-col items-center gap-2 px-4">
         {toasts.map((t) => (
           <div
             key={t.id}
             role="status"
-            className={`animate-toast-in pointer-events-auto flex items-start gap-3 border border-l-4 border-line bg-card px-4 py-3 shadow-[3px_3px_0_0_rgba(33,29,20,0.15)] ${accentClasses(
+            className={`animate-toast-in pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-[10px] border bg-raised px-5 py-3 ${accentClasses(
               t.kind
             )}`}
           >
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
               <Icon kind={t.kind} />
             </span>
-            <p className="text-xs leading-relaxed text-ink">{t.message}</p>
+            <p className="font-mono text-[11.5px] leading-relaxed text-ink">{t.message}</p>
             <button
               onClick={() => dismiss(t.id)}
               className="ml-auto cursor-pointer text-ink-faint hover:text-ink"

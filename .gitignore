@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# GhostTrace: the Python "lib/" rule above (line 17) also matches the frontend
+# source dir, which silently kept frontend/src/lib/api.ts out of git and lost it.
+!frontend/src/lib/
+!frontend/src/lib/**

@@ -18,7 +18,7 @@ import {
 import { useAppStatus } from "../context/AppStatusContext";
 import { useToast } from "../context/ToastContext";
 import PlatformBadge from "../components/PlatformBadge";
-import GoogleVisionBadge from "../components/GoogleVisionBadge";
+import SourceBadge from "../components/SourceBadge";
 import StatusChip from "../components/StatusChip";
 import DmcaPreview from "../components/DmcaPreview";
 import NukeButton from "../components/NukeButton";
@@ -37,6 +37,11 @@ type PreviewState = {
   error?: string;
 };
 
+/**
+ * One side of the side-by-side compare. The suspect frame carries a coral
+ * wash plus a travelling scanline so the two panes are never confusable at a
+ * glance — which matters when the next click files a legal notice.
+ */
 function ExhibitFrame({
   label,
   tone,
@@ -46,19 +51,25 @@ function ExhibitFrame({
   tone: "ink" | "crimson";
   children: React.ReactNode;
 }) {
+  const suspect = tone === "crimson";
   return (
-    <figure
-      className={`border bg-card p-2 shadow-[3px_4px_0_0_rgba(33,29,20,0.1)] ${
-        tone === "crimson" ? "border-crimson/50" : "border-line"
-      }`}
-    >
-      <div className="aspect-video border border-line bg-well">{children}</div>
+    <figure className="min-w-[180px] flex-1">
+      <div className="relative aspect-video overflow-hidden rounded-[10px] border border-line bg-well">
+        {children}
+        {suspect && (
+          <>
+            <span className="gt-scanline" />
+            <span className="pointer-events-none absolute inset-0 rounded-[10px] border border-crimson/50 bg-crimson/10" />
+          </>
+        )}
+      </div>
       <figcaption
-        className={`mt-2 px-1 pb-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
-          tone === "crimson" ? "text-crimson" : "text-ink-soft"
+        className={`mt-2 flex items-center gap-1.5 font-mono text-[10px] ${
+          suspect ? "text-crimson" : "text-verdant"
         }`}
       >
-        {label}
+        <span aria-hidden>{suspect ? "⚠" : "◉"}</span>
+        <span className="truncate">{label}</span>
       </figcaption>
     </figure>
   );
@@ -179,8 +190,8 @@ export default function IncidentRoom() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-2 py-24 text-xs uppercase tracking-[0.16em] text-ink-faint">
-        <Spinner size={20} />
+      <div className="flex items-center justify-center gap-2.5 py-24 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+        <Spinner size={18} />
         Pulling the case file…
       </div>
     );
@@ -190,15 +201,15 @@ export default function IncidentRoom() {
     return (
       <div className="mx-auto max-w-md py-24 text-center">
         <Search className="mx-auto mb-2 h-10 w-10 text-ink-faint" />
-        <p className="mb-1 font-display text-xl text-ink">Case not found</p>
+        <p className="mb-1 text-[17px] font-semibold text-ink">Case not found</p>
         <p className="mb-5 text-xs text-ink-soft">
           It may have been resolved or the link is stale.
         </p>
         <Link
           to="/incidents"
-          className="text-[11px] font-semibold uppercase tracking-[0.14em] text-crimson hover:text-crimson-deep"
+          className="font-mono text-[11px] text-iris-soft hover:text-ink"
         >
-          ← Back to cases
+          ← ALL INCIDENTS
         </Link>
       </div>
     );
@@ -212,150 +223,167 @@ export default function IncidentRoom() {
   const activeTakedown = takedowns[activeTab];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-5">
       <div>
         <Link
           to="/incidents"
-          className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint hover:text-ink"
+          className="font-mono text-[11px] text-ink-faint transition hover:text-ink"
         >
-          ← All cases
+          ← ALL INCIDENTS
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-4xl tracking-tight text-ink">
-            Case {caseNo(incident.id)}
-          </h1>
-          <PlatformBadge platform={incident.platform} />
-          {incident.source === "GOOGLE_VISION" && <GoogleVisionBadge />}
+        <div className="mt-3 flex flex-wrap items-center gap-2.5">
+          <span className="font-mono text-[12px] text-iris-soft">
+            CASE {caseNo(incident.id)}
+          </span>
+          <SourceBadge source={incident.source} />
           <StatusChip status={incident.status} />
         </div>
-        <a
-          href={incident.leak_url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 inline-block truncate text-[11px] text-ink-faint hover:text-crimson hover:underline"
-        >
-          {incident.leak_url}
-        </a>
+        <h1 className="display mt-1.5 text-[25px] text-ink">
+          {originalAsset?.fingerprint?.subject ?? originalAsset?.filename ?? "Your work"}{" "}
+          <span className="font-normal text-ink-faint">found on</span> {incident.platform}
+        </h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <PlatformBadge platform={incident.platform} size="sm" />
+          <a
+            href={incident.leak_url}
+            target="_blank"
+            rel="noreferrer"
+            className="truncate font-mono text-[11px] text-ink-faint transition hover:text-iris-soft"
+          >
+            {incident.leak_url}
+          </a>
+        </div>
       </div>
 
-      {/* Exhibit A vs Exhibit B */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <ExhibitFrame label="Exhibit A — Original work" tone="ink">
-          {originalAsset ? (
+      {/* ---------------------------------------------- evidence, side by side */}
+      <div className="surface p-[18px]">
+        <p className="eyebrow">Evidence — side by side</p>
+        <div className="mt-3 flex flex-wrap items-stretch gap-3.5">
+          <ExhibitFrame label="YOUR ORIGINAL" tone="ink">
+            {originalAsset ? (
+              <img
+                src={uploadUrl(originalAsset.path || originalAsset.filename)}
+                alt="Original asset"
+                className="h-full w-full object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-ink-faint">
+                Original asset unavailable
+              </div>
+            )}
+          </ExhibitFrame>
+
+          <div className="flex min-w-[92px] items-center justify-center">
+            <ScoreRing score={incident.similarity_score} size={92} strokeWidth={5} caption="match" />
+          </div>
+
+          <ExhibitFrame label={`SUSPECT COPY — ${incident.platform}`} tone="crimson">
             <img
-              src={uploadUrl(originalAsset.path || originalAsset.filename)}
-              alt="Original asset"
+              src={seedLeakUrl(incident.leak_image_path)}
+              alt="Leaked copy"
               className="h-full w-full object-contain"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = "none";
               }}
             />
-          ) : (
-            <div className="flex h-full items-center justify-center text-xs text-ink-faint">
-              Original asset unavailable
-            </div>
-          )}
-        </ExhibitFrame>
-        <ExhibitFrame label={`Exhibit B — Infringing copy · ${incident.platform}`} tone="crimson">
-          <img
-            src={seedLeakUrl(incident.leak_image_path)}
-            alt="Leaked copy"
-            className="h-full w-full object-contain"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-        </ExhibitFrame>
-      </div>
+          </ExhibitFrame>
+        </div>
 
-      {/* Finding: score + expert reasoning */}
-      <div className="flex flex-col items-center gap-4 border-y-2 border-ink py-8 text-center">
-        <ScoreRing score={incident.similarity_score} size={140} strokeWidth={10} caption="match" />
-        <p className="max-w-2xl font-display text-lg italic leading-relaxed text-ink">
-          “{incident.reasoning}”
-        </p>
-        <p className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">
-          — {incident.source === "GOOGLE_VISION" ? "Google Vision Web Detection" : "Gemini vision analysis"}
-        </p>
+        <div className="mt-4 rounded-[10px] border border-line bg-iris/5 px-3.5 py-3">
+          <p className="eyebrow text-iris">
+            {incident.source === "SYNTHETIC"
+              ? "Gemini vision — why this is a match"
+              : "Google reverse-image search — why this is a match"}
+          </p>
+          <p className="mt-2 font-mono text-[11.5px] leading-[1.75] text-ink-soft">
+            {incident.reasoning}
+          </p>
+        </div>
       </div>
 
       {/* Steps taken + what's next */}
       <FilingTimeline incident={incident} takedowns={takedowns} platforms={platforms} />
 
-      {/* DMCA notice tabs */}
-      <div>
-        <h2 className="mb-3 border-b border-ink pb-2 font-display text-2xl text-ink">
-          The Notice
-        </h2>
-        <div className="mb-4 flex flex-wrap gap-5 text-[11px] font-semibold uppercase tracking-[0.16em]">
-          {platforms.map((p) => (
-            <button
-              key={p}
-              onClick={() => selectTab(p)}
-              className={`cursor-pointer border-b-2 pb-1 transition ${
-                activeTab === p
-                  ? "border-crimson text-ink"
-                  : "border-transparent text-ink-faint hover:border-line hover:text-ink"
-              }`}
-            >
-              {p}
-              {takedowns[p] && <span className="ml-1.5 text-verdant">✓</span>}
-            </button>
-          ))}
-        </div>
+      {/* ------------------------------------------------------- strike panel */}
+      <div className="surface p-5">
+        <p className="eyebrow">Strike panel</p>
 
-        <DmcaPreview
-          platform={activeTab}
-          status={activeTakedown ? "filed" : activePreview.status}
-          noticeText={activeTakedown?.notice_text ?? activePreview.text}
-          filedAt={activeTakedown?.filed_at}
-          errorMessage={activePreview.error}
-          onGenerate={() => generatePreview(activeTab)}
-        />
-      </div>
-
-      {/* File everywhere */}
-      <div className="space-y-5 border-3 border-double border-crimson/60 bg-crimson-wash/40 p-6">
-        <div className="text-center">
-          <h2 className="font-display text-2xl text-crimson-deep">
-            Ready to take this down everywhere?
-          </h2>
-          <p className="mx-auto mt-1 max-w-xl text-xs leading-relaxed text-ink-soft">
-            One strike drafts and files a DMCA takedown notice on {platforms.join(", ")}{" "}
-            simultaneously — every filing entered into the record below.
-          </p>
-        </div>
-        <div className="relative">
-          {justNuked && (
-            <>
-              <span className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring" />
-              <span
-                className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring"
-                style={{ animationDelay: "150ms" }}
-              />
-              <span
-                className="pointer-events-none absolute inset-0 border-2 border-verdant/70 animate-success-ring"
-                style={{ animationDelay: "300ms" }}
-              />
-            </>
-          )}
-          <NukeButton
-            onClick={nuke}
-            nuking={nuking}
-            alreadyFiled={incident.status === "FILED"}
-          />
-        </div>
-        <div className={`grid gap-3 ${platforms.length >= 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}>
-          {platforms.map((p, idx) => (
-            <PlatformFlipCard
-              key={p}
-              platform={p}
-              filed={!!takedowns[p] || incident.status === "FILED"}
-              justFiled={justNuked}
-              filedAt={takedowns[p]?.filed_at}
-              delayMs={idx * 120}
+        <div className="mt-4 flex flex-wrap items-center gap-6">
+          <div className="relative">
+            {justNuked && (
+              <>
+                <span className="pointer-events-none absolute inset-0 rounded-full border-2 border-verdant/70 animate-success-ring" />
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-full border-2 border-verdant/70 animate-success-ring"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-full border-2 border-verdant/70 animate-success-ring"
+                  style={{ animationDelay: "300ms" }}
+                />
+              </>
+            )}
+            <NukeButton
+              onClick={nuke}
+              nuking={nuking}
+              alreadyFiled={incident.status === "FILED"}
+              platformCount={platforms.length}
             />
-          ))}
+          </div>
+
+          <div className="min-w-[260px] flex-1">
+            <div className="flex flex-wrap gap-2.5">
+              {platforms.map((p, idx) => (
+                <PlatformFlipCard
+                  key={p}
+                  platform={p}
+                  filed={!!takedowns[p] || incident.status === "FILED"}
+                  justFiled={justNuked}
+                  filedAt={takedowns[p]?.filed_at}
+                  delayMs={200 + idx * 260}
+                />
+              ))}
+            </div>
+            <p className="mt-3 font-mono text-[10px] leading-[1.7] text-ink-faint">
+              One hold. {platforms.length} notices. Notice text is generated per-platform,
+              timestamped, and appended to the audit log — export it from Activity as your
+              evidence file.
+            </p>
+          </div>
+        </div>
+
+        {/* ----------------------------------------------- dmca preview tabs */}
+        <div className="mt-6">
+          <div className="flex flex-wrap gap-1.5 border-b border-line">
+            {platforms.map((p) => (
+              <button
+                key={p}
+                onClick={() => selectTab(p)}
+                className={`cursor-pointer border-b-2 px-3.5 py-2 font-mono text-[11px] tracking-[0.08em] transition ${
+                  activeTab === p
+                    ? "border-b-iris text-iris-soft"
+                    : "border-b-transparent text-ink-faint hover:text-ink"
+                }`}
+              >
+                {p.toUpperCase()}
+                {takedowns[p] && <span className="ml-1.5 text-verdant">✓</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3">
+            <DmcaPreview
+              platform={activeTab}
+              status={activeTakedown ? "filed" : activePreview.status}
+              noticeText={activeTakedown?.notice_text ?? activePreview.text}
+              filedAt={activeTakedown?.filed_at}
+              errorMessage={activePreview.error}
+              onGenerate={() => generatePreview(activeTab)}
+            />
+          </div>
         </div>
       </div>
     </div>

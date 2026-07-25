@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ScanSearch, ExternalLink } from "lucide-react";
 import { getIncidents, seedLeakUrl, ApiError, type Incident } from "../lib/api";
 import PlatformBadge from "../components/PlatformBadge";
-import GoogleVisionBadge from "../components/GoogleVisionBadge";
+import SourceBadge from "../components/SourceBadge";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
@@ -37,13 +37,11 @@ export default function Incidents() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-faint">
-          Infringement matters, newest first
-        </p>
-        <h1 className="mt-1 font-display text-4xl tracking-tight text-ink">Open Cases</h1>
-        <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-soft">
-          Leaked or re-uploaded copies of your work, detected by Gemini vision and real
-          Google web searches. Each case carries the evidence needed to file.
+        <p className="eyebrow text-iris">Case files · newest first</p>
+        <h1 className="display mt-2 text-[27px] text-ink">Incidents</h1>
+        <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-soft">
+          Leaked or re-uploaded copies of your work, found by Gemini vision and real
+          Google reverse-image searches. Each case carries the evidence needed to file.
         </p>
       </div>
 
@@ -61,27 +59,22 @@ export default function Incidents() {
           title="No cases open"
           subtitle="Run a sweep from the Docket to compare your exhibits against the monitored web."
           action={
-            <Link
-              to="/"
-              className="border-2 border-ink bg-ink px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-paper transition hover:border-crimson hover:bg-crimson"
-            >
-              Go to the Docket
+            <Link to="/" className="btn btn-primary">
+              Go to overview
             </Link>
           }
         />
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-2.5">
           {incidents.map((incident) => (
             <li key={incident.id}>
               <Link
                 to={`/incidents/${incident.id}`}
-                className={`flex items-center gap-4 border border-line border-l-4 bg-card p-3 transition hover:border-l-crimson hover:shadow-[3px_3px_0_0_rgba(33,29,20,0.12)] ${
-                  incident.status === "DETECTED"
-                    ? "animate-ghost-pulse border-l-crimson"
-                    : "border-l-line"
+                className={`surface surface-hover flex items-center gap-3.5 border-l-2 p-3 ${
+                  incident.status === "DETECTED" ? "border-l-brass" : "border-l-transparent"
                 }`}
               >
-                <div className="h-20 w-20 shrink-0 overflow-hidden border border-line bg-well">
+                <div className="h-[70px] w-[70px] shrink-0 overflow-hidden rounded-[10px] border border-line bg-well">
                   <img
                     src={seedLeakUrl(incident.leak_image_path)}
                     alt="Leaked copy"
@@ -94,36 +87,45 @@ export default function Incidents() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <span className="font-display text-base font-semibold text-ink">
-                      Case {caseNo(incident.id)}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[11px] text-iris-soft">
+                      CASE {caseNo(incident.id)}
                     </span>
-                    <PlatformBadge platform={incident.platform} size="sm" />
-                    {incident.source === "GOOGLE_VISION" && <GoogleVisionBadge size="sm" />}
+                    <SourceBadge source={incident.source} size="sm" />
                     <StatusChip status={incident.status} />
                   </div>
-                  <p className="truncate font-display text-sm italic text-ink-soft">
-                    “{incident.reasoning}”
-                  </p>
-                  {/* not an <a>: anchors can't nest inside the row's Link */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open(incident.leak_url, "_blank", "noopener,noreferrer");
-                    }}
-                    className="mt-1 flex w-full cursor-pointer items-center gap-1 truncate text-left text-[11px] text-ink-faint hover:text-crimson hover:underline"
-                  >
-                    <ExternalLink className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{incident.leak_url}</span>
-                  </button>
-                  <p className="mt-1 text-[11px] tabular-nums text-ink-faint">
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="truncate text-[15px] font-bold text-ink">
+                      {incident.reasoning}
+                    </p>
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <PlatformBadge platform={incident.platform} size="sm" />
+                    {/* not an <a>: anchors can't nest inside the row's Link */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(incident.leak_url, "_blank", "noopener,noreferrer");
+                      }}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 text-left font-mono text-[10px] text-ink-faint transition hover:text-iris-soft"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{incident.leak_url}</span>
+                    </button>
+                  </div>
+                  <p className="mt-1 font-mono text-[10px] tabular-nums text-ink-faint">
                     Detected {formatDate(incident.detected_at)}
                   </p>
                 </div>
 
-                <ScoreRing score={incident.similarity_score} size={56} strokeWidth={5} caption="match" />
+                <ScoreRing
+                  score={incident.similarity_score}
+                  size={62}
+                  strokeWidth={5}
+                  caption="match"
+                />
 
                 <span className="shrink-0 text-ink-faint">→</span>
               </Link>

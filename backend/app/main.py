@@ -16,6 +16,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # Custom headers are invisible to fetch() unless explicitly exposed --
+    # the paginated list endpoints return their pre-slice total here.
+    expose_headers=["X-Total-Count"],
 )
 
 

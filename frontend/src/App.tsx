@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { getProfile, ApiError, type CreatorProfile } from "./lib/api";
 import { AppStatusProvider } from "./context/AppStatusContext";
-import NavBar from "./components/NavBar";
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
 import ErrorBanner from "./components/ErrorBanner";
 import Spinner from "./components/Spinner";
 import Onboarding from "./pages/Onboarding";
@@ -19,6 +20,7 @@ type ProfileState =
 
 function AppShell() {
   const [profileState, setProfileState] = useState<ProfileState>({ status: "loading" });
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -49,47 +51,61 @@ function AppShell() {
   }, [profileState, location.pathname, navigate]);
 
   const hasProfile = profileState.status === "ready" ? !!profileState.profile : null;
+  const profile = profileState.status === "ready" ? profileState.profile : null;
+
+  // Route changes must close the mobile drawer, otherwise it stays open over
+  // the page the user just navigated to.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div className="min-h-screen">
-      <NavBar hasProfile={hasProfile} />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        {profileState.status === "error" && (
-          <div className="mb-6">
-            <ErrorBanner
-              message={`Backend unreachable — ${profileState.message}. You can keep browsing; we'll retry.`}
-              onRetry={loadProfile}
-            />
-          </div>
-        )}
+    // Admin shell: fixed rail on the left, sticky navbar across the content
+    // column, scrolling content underneath.
+    <div className="flex min-h-screen">
+      <Sidebar hasProfile={hasProfile} open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-        {profileState.status === "loading" ? (
-          <div className="flex items-center justify-center gap-2 py-24 text-xs uppercase tracking-[0.16em] text-ink-faint">
-            <Spinner size={20} />
-            Opening the docket…
-          </div>
-        ) : (
-          <Routes>
-            <Route
-              path="/onboarding"
-              element={
-                <Onboarding
-                  onDone={() => {
-                    loadProfile();
-                    navigate("/");
-                  }}
-                />
-              }
-            />
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/assets" element={<Assets />} />
-            <Route path="/incidents" element={<Incidents />} />
-            <Route path="/incidents/:id" element={<IncidentRoom />} />
-            <Route path="/activity" element={<Activity />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        )}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar profile={profile} onOpenMenu={() => setMenuOpen(true)} />
+
+        <main className="mx-auto w-full max-w-[1100px] flex-1 px-5 py-6 sm:px-7">
+          {profileState.status === "error" && (
+            <div className="mb-6">
+              <ErrorBanner
+                message={`Backend unreachable — ${profileState.message}. You can keep browsing; we'll retry.`}
+                onRetry={loadProfile}
+              />
+            </div>
+          )}
+
+          {profileState.status === "loading" ? (
+            <div className="flex items-center justify-center gap-2.5 py-24 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+              <Spinner size={18} />
+              Opening the docket…
+            </div>
+          ) : (
+            <Routes>
+              <Route
+                path="/onboarding"
+                element={
+                  <Onboarding
+                    onDone={() => {
+                      loadProfile();
+                      navigate("/");
+                    }}
+                  />
+                }
+              />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/assets" element={<Assets />} />
+              <Route path="/incidents" element={<Incidents />} />
+              <Route path="/incidents/:id" element={<IncidentRoom />} />
+              <Route path="/activity" element={<Activity />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
